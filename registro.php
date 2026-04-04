@@ -1,53 +1,41 @@
 <?php
 session_start();
-
-$host = "localhost";
-$user = "root"; 
-$pass = "";     
-$db   = "the_drop_vinyls";
-
+$host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
 
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$error = "";
-$exito = "";
+$error = ""; $exito = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre = $conn->real_escape_string(trim($_POST['nombre']));
     $apellido = $conn->real_escape_string(trim($_POST['apellido']));
     $correo = $conn->real_escape_string(trim($_POST['correo']));
-    $contrasena = $conn->real_escape_string($_POST['contrasena']);
     $direccion = $conn->real_escape_string(trim($_POST['direccion']));
+    $pass1 = $_POST['contrasena'];
+    $pass2 = $_POST['confirmar_contrasena'];
 
-    // 1. Verificamos si el correo ya existe en la base de datos
-    $check_email = $conn->prepare("SELECT id FROM usuarios WHERE correo = ?");
-    $check_email->bind_param("s", $correo);
-    $check_email->execute();
-    $resultado_email = $check_email->get_result();
-
-    if ($resultado_email->num_rows > 0) {
-        $error = "Este correo ya está registrado. Por favor, inicia sesión.";
+    // VALIDACIÓN: ¿Son iguales las contraseñas?
+    if ($pass1 !== $pass2) {
+        $error = "Las contraseñas no coinciden. Por favor, verifica.";
     } else {
-        // 2. Si no existe, insertamos el nuevo usuario
-        // Nota: Le asignamos el rol 'cliente' por defecto y la fecha actual
-        $sql_insert = "INSERT INTO usuarios (nombre, apellido, correo, contrasena, rol, direccion, fecha_registro) VALUES (?, ?, ?, ?, 'cliente', ?, NOW())";
-        $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("sssss", $nombre, $apellido, $correo, $contrasena, $direccion);
-
-        if ($stmt_insert->execute()) {
-            $exito = "¡Cuenta creada con éxito! Ya puedes iniciar sesión.";
+        $check_email = $conn->query("SELECT id FROM usuarios WHERE correo = '$correo'");
+        if ($check_email->num_rows > 0) {
+            $error = "Este correo ya está registrado.";
         } else {
-            $error = "Hubo un error al crear la cuenta: " . $conn->error;
+            // ROL SIEMPRE: 'cliente' (Usuario Normal)
+            $sql = "INSERT INTO usuarios (nombre, apellido, correo, contrasena, rol, direccion, fecha_registro) 
+                    VALUES ('$nombre', '$apellido', '$correo', '$pass1', 'cliente', '$direccion', NOW())";
+            
+            if ($conn->query($sql)) {
+                $exito = "¡Cuenta creada con éxito! Ya puedes iniciar sesión.";
+            } else {
+                $error = "Error al registrar: " . $conn->error;
+            }
         }
-        $stmt_insert->close();
     }
-    $check_email->close();
 }
-$conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -115,6 +103,11 @@ $conn->close();
                                 <label for="contrasena" class="form-label fw-medium" style="color: #504E76;">Contraseña</label>
                                 <input type="password" class="form-control border-secondary-subtle" id="contrasena" name="contrasena" placeholder="********" required>
                                 <div class="form-text">Mínimo 8 caracteres para tu seguridad.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">Confirmar Contraseña</label>
+                                <input type="password" class="form-control border-secondary-subtle" name="confirmar_contrasena" required>
                             </div>
 
                             <div class="d-grid mt-4">

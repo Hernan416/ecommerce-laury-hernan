@@ -1,21 +1,35 @@
 <?php
 session_start();
+if (!isset($_SESSION['usuario_id'])) { header("Location: ../login/login.php"); exit(); }
 
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login/login.php");
-    exit();
-}
-
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "the_drop_vinyls";
-
+$host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
+$id_usuario = $_SESSION['usuario_id'];
+$mensaje = "";
 
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+// LÓGICA DE ACTUALIZACIÓN
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['actualizar_datos'])) {
+        $nueva_direccion = $conn->real_escape_string($_POST['direccion']);
+        $conn->query("UPDATE usuarios SET direccion = '$nueva_direccion' WHERE id = '$id_usuario'");
+        $mensaje = "Datos actualizados correctamente.";
+    }
+
+    if (isset($_POST['cambiar_pass'])) {
+        $p1 = $_POST['n_pass'];
+        $p2 = $_POST['c_pass'];
+        
+        if ($p1 === $p2 && !empty($p1)) {
+            $conn->query("UPDATE usuarios SET contrasena = '$p1' WHERE id = '$id_usuario'");
+            $mensaje = "Contraseña cambiada con éxito.";
+        } else {
+            $mensaje = "Error: Las contraseñas no coinciden.";
+        }
+    }
 }
+
+// Obtener datos frescos del usuario
+$datos_usuario = $conn->query("SELECT * FROM usuarios WHERE id = '$id_usuario'")->fetch_assoc();
 
 $id_usuario = $_SESSION['usuario_id'];
 
@@ -97,8 +111,9 @@ $resultado_facturas = $stmt_facturas->get_result();
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button class="btn fw-medium shadow-sm" style="background-color: #E6D8B8; color: #504E76;" onmouseover="this.style.backgroundColor='#FDF8E2'" onmouseout="this.style.backgroundColor='#E6D8B8'">Editar Perfil</button>
-                        <a href="../../login.php" class="btn fw-medium text-white shadow-sm" style="background-color: #504E76;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#504E76'">Cerrar Sesión</a>
+                        <button class="btn fw-medium shadow-sm" style="background-color: #E6D8B8; color: #504E76;" data-bs-toggle="modal" data-bs-target="#modalDatos">Editar Dirección</button>
+                        <button class="btn fw-medium text-white shadow-sm" style="background-color: #C06C38;" data-bs-toggle="modal" data-bs-target="#modalPass">Cambiar Contraseña</button>
+                        <a href="../../login.php" class="btn fw-medium text-white shadow-sm" style="background-color: #504E76;">Cerrar Sesión</a>
                     </div>
                 </div>
             </div>
@@ -160,6 +175,48 @@ $resultado_facturas = $stmt_facturas->get_result();
             
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="modalDatos" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" method="POST">
+      <div class="modal-header" style="background-color: #E6D8B8;">
+        <h5 class="modal-title" style="font-family: 'Righteous';">Editar Dirección</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Nueva Dirección de Entrega</label>
+        <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['direccion']); ?>" required>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" name="actualizar_datos" class="btn text-white" style="background-color: #504E76;">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="modalPass" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" method="POST">
+      <div class="modal-header" style="background-color: #E6D8B8;">
+        <h5 class="modal-title" style="font-family: 'Righteous';">Cambiar Contraseña</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label">Nueva Contraseña</label>
+            <input type="password" name="n_pass" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Confirmar Nueva Contraseña</label>
+            <input type="password" name="c_pass" class="form-control" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" name="cambiar_pass" class="btn text-white" style="background-color: #C06C38;">Actualizar Contraseña</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
