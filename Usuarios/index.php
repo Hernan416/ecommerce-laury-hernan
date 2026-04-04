@@ -67,8 +67,13 @@ $resultado = $conn->query($sql);
                 <li class="nav-item me-3 mb-2 mb-lg-0">
                     <span class="text-white fw-medium">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
                 </li>
+                <li class="nav-item me-2 mb-2 mb-lg-0">
+                    <a class="btn text-white fw-medium shadow-sm px-3" href="carrito.php" style="background-color: #C06C38; border: none;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#C06C38'">
+                        🛒 Carrito
+                    </a>
+                </li>
                 <li class="nav-item">
-                    <a class="btn shadow-sm px-4 fw-medium" href="#" style="background-color: #E6D8B8; color: #504E76;" onmouseover="this.style.backgroundColor='#FDF8E2'; this.style.color='#8D4A23';" onmouseout="this.style.backgroundColor='#E6D8B8'; this.style.color='#504E76';">Mi Perfil</a>
+                    <a class="btn shadow-sm px-4 fw-medium" href="./perfil/perfil.php" style="background-color: #E6D8B8; color: #504E76; border: none;" onmouseover="this.style.backgroundColor='#FDF8E2'; this.style.color='#8D4A23';" onmouseout="this.style.backgroundColor='#E6D8B8'; this.style.color='#504E76';">Mi Perfil</a>
                 </li>
             </ul>
         </div>

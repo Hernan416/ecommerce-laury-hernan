@@ -20,3 +20,27 @@ El proyecto utiliza Google Fonts para su tipografía.
     * *Uso:* Etiquetas `h1`, `h2`, `h3`, nombre de la marca. Transmite la vibra retro/musical.
 * **Fuente Secundaria (Cuerpo, Párrafos, Inputs, Botones):** `Fredoka` (Pesos del 300 al 700)
     * *Uso:* Etiquetas `p`, `span`, `input`, `button`. Asegura legibilidad y una lectura amigable.
+
+
+## Cambios por añadir
+
+### SQL
+
+- Que en la tabla usuarios se pida la direccion (cambiar Pagina Perfil)
+- Hacer muchos más Insert
+- Tabla de categorias 
+
+### Interfaz
+
+- Añadir pagina de Sign in
+- 
+
+### Index.php
+
+- Agregar un ul de categorias
+- Agregar filtros
+- 
+
+### Perfil
+
+- Editar perfil pagina
