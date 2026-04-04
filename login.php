@@ -100,7 +100,7 @@ $conn->close();
                     </form>
 
                     <div class="text-center mt-4">
-                        <p class="mb-0">¿Aún no tienes cuenta? <a href="#" class="text-decoration-none fw-bold" style="color: #C06C38;" onmouseover="this.style.color='#8D4A23'" onmouseout="this.style.color='#C06C38'">Regístrate aquí</a></p>
+                        <p class="mb-0">¿Aún no tienes cuenta? <a href="registro.php" class="text-decoration-none fw-bold" style="color: #C06C38;" onmouseover="this.style.color='#8D4A23'" onmouseout="this.style.color='#C06C38'">Regístrate aquí</a></p>
                     </div>
                 </div>
                 

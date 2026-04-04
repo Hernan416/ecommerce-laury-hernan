@@ -20,7 +20,7 @@ if ($conn->connect_error) {
 $id_usuario = $_SESSION['usuario_id'];
 
 // 1. Obtener datos del usuario
-$stmt_user = $conn->prepare("SELECT nombre, apellido, correo, rol, fecha_registro FROM usuarios WHERE id = ?");
+$stmt_user = $conn->prepare("SELECT nombre, apellido, correo, rol, fecha_registro, direccion FROM usuarios WHERE id = ?");
 $stmt_user->bind_param("i", $id_usuario);
 $stmt_user->execute();
 $datos_usuario = $stmt_user->get_result()->fetch_assoc();
@@ -82,9 +82,14 @@ $resultado_facturas = $stmt_facturas->get_result();
                     </p>
                     
                     <div class="mb-3">
-                        <span class="d-block fw-bold" style="color: #8D4A23;">Correo Electrónico:</span>
-                        <span style="color: #504E76;"><?php echo htmlspecialchars($datos_usuario['correo']); ?></span>
-                    </div>
+                     <span class="d-block fw-bold" style="color: #8D4A23;">Correo Electrónico:</span>
+                     <span style="color: #504E76;"><?php echo htmlspecialchars($datos_usuario['correo']); ?></span>
+                 </div>
+
+                 <div class="mb-3">
+                     <span class="d-block fw-bold" style="color: #8D4A23;">Dirección Registrada:</span>
+                     <span style="color: #504E76;"><?php echo htmlspecialchars($datos_usuario['direccion'] ?? 'Sin dirección registrada'); ?></span>
+                 </div>
                     
                     <div class="mb-4">
                         <span class="d-block fw-bold" style="color: #8D4A23;">Miembro desde:</span>

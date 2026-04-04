@@ -28,9 +28,10 @@ if (isset($_GET['eliminar'])) {
 }
 
 // Consultar los productos en el carrito
-$sql = "SELECT c.id AS id_carrito, p.nombre_producto, p.artista, p.precio, p.imagen_portada, c.cantidad 
+$sql = "SELECT c.id AS id_carrito, p.nombre_producto, p.artista, p.precio, p.imagen_portada, c.cantidad, cat.nombre_categoria 
         FROM carrito c 
         JOIN productos p ON c.id_producto = p.id 
+        LEFT JOIN categorias cat ON p.id_categoria = cat.id
         WHERE c.id_usuario = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_usuario);
@@ -78,13 +79,16 @@ $total = 0;
                     <div class="card shadow-sm border-0 rounded-4 mb-3" style="border: 2px solid #E6D8B8 !important;">
                         <div class="row g-0 align-items-center p-3 bg-white rounded-4">
                             <div class="col-md-2 text-center">
-                                <img src="../img/<?php echo $row['imagen_portada']; ?>" class="img-fluid rounded" alt="Portada" style="max-height: 100px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/100x100/E6D8B8/504E76?text=Vinilo'">
+                                <img src="<?php echo $row['imagen_portada']; ?>" class="img-fluid rounded" alt="Portada" style="max-height: 100px; object-fit: cover; border: 1px solid #E6D8B8;">
                             </div>
                             <div class="col-md-6">
                                 <div class="card-body py-2">
                                     <h5 class="card-title m-0" style="font-family: 'Righteous', sans-serif; color: #504E76;"><?php echo htmlspecialchars($row['nombre_producto']); ?></h5>
                                     <p class="card-text fw-medium m-0" style="color: #8D4A23;"><small><?php echo htmlspecialchars($row['artista']); ?></small></p>
-                                    <p class="card-text mt-2 mb-0 fw-bold" style="color: #C06C38;">$<?php echo number_format($row['precio'], 2); ?> <span class="fw-normal text-muted" style="font-size: 0.9rem;">x <?php echo $row['cantidad']; ?></span></p>
+                                    
+                                    <span class="badge mt-1 mb-2" style="background-color: #E6D8B8; color: #504E76; font-size: 0.75rem;"><?php echo htmlspecialchars($row['nombre_categoria']); ?></span>
+                                    
+                                    <p class="card-text mb-0 fw-bold" style="color: #C06C38;">$<?php echo number_format($row['precio'], 2); ?> <span class="fw-normal text-muted" style="font-size: 0.9rem;">x <?php echo $row['cantidad']; ?></span></p>
                                 </div>
                             </div>
                             <div class="col-md-4 text-center text-md-end px-3">

@@ -19,7 +19,14 @@ $compra_exitosa = false;
 
 // Si el usuario envió el formulario de confirmación de envío
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
+
+    // Obtener la dirección actual del usuario para autocompletar el formulario
+    $stmt_user = $conn->prepare("SELECT direccion FROM usuarios WHERE id = ?");
+    $stmt_user->bind_param("i", $id_usuario);
+    $stmt_user->execute();
+    $datos_usuario = $stmt_user->get_result()->fetch_assoc();
+    $stmt_user->close();
+        
     // 1. Calcular total del carrito actual
     $stmt_total = $conn->prepare("SELECT SUM(p.precio * c.cantidad) AS total FROM carrito c JOIN productos p ON c.id_producto = p.id WHERE c.id_usuario = ?");
     $stmt_total->bind_param("i", $id_usuario);
@@ -111,8 +118,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <form action="checkout.php" method="POST">
                             
                             <div class="mb-3">
-                                <label class="form-label fw-medium" style="color: #504E76;">Dirección de Entrega</label>
-                                <input type="text" class="form-control border-secondary-subtle" required placeholder="Ej. Calle Principal 123">
+                             <label class="form-label fw-medium" style="color: #504E76;">Dirección de Entrega</label>
+                             <input type="text" class="form-control border-secondary-subtle" required placeholder="Ej. Calle Principal 123" value="<?php echo htmlspecialchars($datos_usuario['direccion'] ?? ''); ?>">
                             </div>
                             
                             <div class="row mb-3">
