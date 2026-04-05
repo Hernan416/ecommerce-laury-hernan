@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['usuario_rol'] = $usuario['rol'];
 
             if ($usuario['rol'] == 'admin') {
-                header("Location: ../admin_dashboard.php");
+                header("Location: admin_dashboard.php");
             } else {
                 header("Location: Usuarios/index.php"); // Redirige a Usuarios/index.php
             }
@@ -69,7 +69,7 @@ $conn->close();
             <div class="card shadow-lg border-0 rounded-4" style="border: 2px solid #E6D8B8 !important; overflow: hidden;">
                 
                 <div class="card-header text-center p-4 border-bottom-0" style="background-color: #E6D8B8; border-bottom: 2px solid #C06C38 !important;">
-                    <img src="../assets/LOGO.png" alt="Logo The Drop Vinyls" class="img-fluid mb-3" style="max-height: 80px;">
+                    <img src="../assets/LOGO.png" alt="Logo The Drop Vinyls" style="height: 40px; margin-right: 12px; object-fit: contain;">
                     <h1 class="display-6 m-0" style="font-family: 'Righteous', sans-serif; color: #504E76;">The Drop Vinyls</h1>
                     <p class="mt-2 fw-medium mb-0" style="color: #8D4A23;">La música de hoy, el ritual de siempre.</p>
                 </div>

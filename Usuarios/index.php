@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login/login.php");
+    header("Location: login.php");
     exit();
 }
 
@@ -58,6 +58,7 @@ if (isset($_GET['categoria']) && is_numeric($_GET['categoria'])) {
 
 $resultado = $conn->query($sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
