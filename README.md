@@ -1,46 +1,21 @@
-# The Drop Vinyls - Guía de Estilos (UI/Visual Identity)
+Bienvenido a The Drop Vinyls esperamos te guste mucho nuestro sitio, encuentra los vinyls de tus artistas favoritos con el mejor precio :)
 
-Este documento define las pautas visuales para el desarrollo del e-commerce "The Drop Vinyls", asegurando una interfaz coherente, cálida y con un toque retro-moderno.
+💿 The Drop Vinyls - E-commerce de Vinilos
+The Drop Vinyls es una plataforma web completa diseñada para melómanos que buscan la experiencia del ritual del vinilo en la era digital. El sistema permite la gestión de inventario, navegación de productos, carrito de compras y generación de facturas imprimibles.
 
-## 🎨 Paleta de Colores
+🚀 Características Principales
+👤 Para Usuarios (Clientes)
+Gestión de Perfil: Los usuarios pueden actualizar su nombre, correo y dirección desde un modal intuitivo.
 
-| Color | Hexadecimal | Uso Principal |
-| :--- | :--- | :--- |
-| **Morado Oscuro** | `#504E76` | Textos principales, fondos oscuros, contrastes fuertes. |
-| **Marrón Óxido** | `#8D4A23` | Estados "Hover" de botones, bordes, elementos secundarios de peso. |
-| **Naranja Arcilla** | `#C06C38` | Botones de acción principales (Call to Action), iconos, enlaces destacados. |
-| **Crema Claro** | `#FDF8E2` | Color de fondo principal (Body), fondos de tarjetas claras. |
-| **Crema Oscuro** | `#E6D8B8` | Fondos secundarios, secciones destacadas, tarjetas o modales. |
+Carrito Dinámico: Sistema para agregar, visualizar y eliminar productos antes de finalizar la compra.
 
-## 🔤 Tipografía
+Historial de Compras: Panel personalizado para revisar pedidos anteriores con montos y fechas.
 
-El proyecto utiliza Google Fonts para su tipografía.
+Facturación: Generación automática de facturas en formato profesional con opción de impresión directa.
 
-* **Fuente Principal (Títulos, Logos, Headers):** `Righteous`
-    * *Uso:* Etiquetas `h1`, `h2`, `h3`, nombre de la marca. Transmite la vibra retro/musical.
-* **Fuente Secundaria (Cuerpo, Párrafos, Inputs, Botones):** `Fredoka` (Pesos del 300 al 700)
-    * *Uso:* Etiquetas `p`, `span`, `input`, `button`. Asegura legibilidad y una lectura amigable.
+🛠️ Para Administradores
+Panel de Control: Interfaz para gestionar el inventario de la tienda.
 
+CRUD de Productos: Capacidad para crear, editar y eliminar vinilos, artistas, precios y stock.
 
-## Cambios por añadir
-
-### SQL
-
-- Que en la tabla usuarios se pida la direccion (cambiar Pagina Perfil)
-- Hacer muchos más Insert
-- Tabla de categorias 
-
-### Interfaz
-
-- Añadir pagina de Sign in
-- 
-
-### Index.php
-
-- Agregar un ul de categorias
-- Agregar filtros
-- 
-
-### Perfil
-
-- Editar perfil pagina
+Gestión de Categorías: Organización de productos por géneros musicales (Pop, Rock, Electrónica, etc.).
