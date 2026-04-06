@@ -5,14 +5,14 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// 1. PRIMERO NOS CONECTAMOS A LA BASE DE DATOS
+// CONEXION A BASE DE DATOS
 $host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) { die("Error de conexión: " . $conn->connect_error); }
 
 $id_usuario = $_SESSION['usuario_id'];
 
-// 2. LÓGICA DEL CARRITO DIRECTA A LA BASE DE DATOS
+// LÓGICA DEL CARRITO
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_al_carrito'])) {
     
     // Aseguramos los datos para evitar inyecciones SQL
@@ -37,12 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_al_carrito'])
         }
     }
 
-    // Recargamos la página
+    
     header("Location: index.php");
     exit();
 }
 
-// 3. CONSULTAS PARA MOSTRAR LOS PRODUCTOS EN LA TIENDA
+// CONSULTAS PARA MOSTRAR LOS PRODUCTOS
 $busqueda = "";
 $sql = "SELECT p.*, c.nombre_categoria FROM productos p LEFT JOIN categorias c ON p.id_categoria = c.id WHERE p.stock > 0";
 
@@ -83,7 +83,7 @@ $resultado = $conn->query($sql);
 <nav class="navbar navbar-expand-lg shadow-sm" style="background-color: #504E76; padding: 15px 0;">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="index.php" style="font-family: 'Righteous', sans-serif; color: #FDF8E2; font-size: 1.8rem; letter-spacing: 1px;">
-            <img src="assets/LOGO.png" alt="Logo The Drop Vinyls" style="height: 40px; margin-right: 12px; object-fit: contain;">
+            <img src="../assets/LOGO.png" alt="Logo The Drop Vinyls" style="height: 40px; margin-right: 12px; object-fit: contain;">
             The Drop Vinyls perfil
         </a>
         

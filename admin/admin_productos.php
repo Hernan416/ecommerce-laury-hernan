@@ -6,7 +6,7 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 1. ELIMINAR PRODUCTO
+// ELIMINAR PRODUCTO
 if (isset($_GET['eliminar'])) {
     $id = intval($_GET['eliminar']);
     $conn->query("DELETE FROM productos WHERE id = $id");
@@ -14,7 +14,7 @@ if (isset($_GET['eliminar'])) {
     exit();
 }
 
-// 2. AGREGAR PRODUCTO
+// AGREGAR PRODUCTO
 if (isset($_POST['agregar'])) {
     $nombre = $conn->real_escape_string($_POST['nombre']);
     $artista = $conn->real_escape_string($_POST['artista']);
@@ -31,7 +31,7 @@ if (isset($_POST['agregar'])) {
     exit();
 }
 
-// 3. LÓGICA: EDITAR PRODUCTO
+// EDITAR PRODUCTO
 if (isset($_POST['editar_producto'])) {
     $id = intval($_POST['id']);
     $nombre = $conn->real_escape_string($_POST['nombre']);
@@ -51,13 +51,13 @@ if (isset($_POST['editar_producto'])) {
     exit();
 }
 
-// 4. CONSULTA PARA LA TABLA (JOIN CON CATEGORÍAS)
+// CONSULTA PARA LA TABLA
 $sql_ver = "SELECT p.*, c.nombre_categoria 
             FROM productos p 
             LEFT JOIN categorias c ON p.id_categoria = c.id";
 $result = $conn->query($sql_ver);
 
-// 5. OBTENER CATEGORÍAS PARA LOS SELECTS
+// OBTENER CATEGORÍAS PARA LOS SELECTS
 $res_cats = $conn->query("SELECT * FROM categorias");
 $todas_las_cats = [];
 while($cat_row = $res_cats->fetch_assoc()){

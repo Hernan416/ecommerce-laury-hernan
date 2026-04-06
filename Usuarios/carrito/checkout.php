@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $datos_usuario = $stmt_user->get_result()->fetch_assoc();
     $stmt_user->close();
         
-    // 1. Calcular total del carrito actual
+    // Calcular total del carrito actual
     $stmt_total = $conn->prepare("SELECT SUM(p.precio * c.cantidad) AS total FROM carrito c JOIN productos p ON c.id_producto = p.id WHERE c.id_usuario = ?");
     $stmt_total->bind_param("i", $id_usuario);
     $stmt_total->execute();
@@ -36,14 +36,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_total->close();
 
     if ($precio_final > 0) {
-        // 2. Crear la factura maestra
+        // Crear la factura
         $stmt_factura = $conn->prepare("INSERT INTO facturas (id_usuario, precio_final) VALUES (?, ?)");
         $stmt_factura->bind_param("id", $id_usuario, $precio_final);
         $stmt_factura->execute();
         $id_factura_nueva = $conn->insert_id; // Obtenemos el ID de la factura recién creada
         $stmt_factura->close();
 
-        // 3. Mover items del carrito a factura_detalles
+        // Mover items del carrito a factura_detalles
         $sql_detalles = "INSERT INTO factura_detalles (id_factura, id_producto, cantidad, precio_unitario) 
                          SELECT ?, c.id_producto, c.cantidad, p.precio 
                          FROM carrito c JOIN productos p ON c.id_producto = p.id 
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_detalles->execute();
         $stmt_detalles->close();
 
-        // 4. Vaciar el carrito de este usuario
+        // Vaciar el carrito de este usuario
         $stmt_vaciar = $conn->prepare("DELETE FROM carrito WHERE id_usuario = ?");
         $stmt_vaciar->bind_param("i", $id_usuario);
         $stmt_vaciar->execute();

@@ -28,19 +28,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Obtener datos frescos del usuario
-$datos_usuario = $conn->query("SELECT * FROM usuarios WHERE id = '$id_usuario'")->fetch_assoc();
-
-$id_usuario = $_SESSION['usuario_id'];
-
-// 1. Obtener datos del usuario
+// Obtener datos del usuario
 $stmt_user = $conn->prepare("SELECT nombre, apellido, correo, rol, fecha_registro, direccion FROM usuarios WHERE id = ?");
 $stmt_user->bind_param("i", $id_usuario);
 $stmt_user->execute();
 $datos_usuario = $stmt_user->get_result()->fetch_assoc();
 $stmt_user->close();
 
-// 2. Obtener historial de facturas
+// Obtener historial de facturas
 $stmt_facturas = $conn->prepare("SELECT id, precio_final, fecha_emision FROM facturas WHERE id_usuario = ? ORDER BY fecha_emision DESC");
 $stmt_facturas->bind_param("i", $id_usuario);
 $stmt_facturas->execute();
@@ -62,8 +57,8 @@ $resultado_facturas = $stmt_facturas->get_result();
 
 <nav class="navbar navbar-expand-lg shadow-sm" style="background-color: #504E76; padding: 15px 0;">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="index.php" style="font-family: 'Righteous', sans-serif; color: #FDF8E2; font-size: 1.8rem; letter-spacing: 1px;">
-            <img src="../assets/LOGO.png" alt="Logo The Drop Vinyls" style="height: 40px; margin-right: 12px; object-fit: contain;">
+        <a class="navbar-brand d-flex align-items-center" href="../index.php" style="font-family: 'Righteous', sans-serif; color: #FDF8E2; font-size: 1.8rem; letter-spacing: 1px;">
+            <img src="../../assets/LOGO.png" alt="Logo The Drop Vinyls" style="height: 40px; margin-right: 12px; object-fit: contain;">
             The Drop Vinyls
         </a>
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,7 +133,6 @@ $resultado_facturas = $stmt_facturas->get_result();
                                 <div class="accordion-body" style="background-color: #FDF8E2;">
                                     <ul class="list-group list-group-flush rounded border" style="border-color: #E6D8B8 !important;">
                                         <?php
-                                            // Consultar los items específicos de esta factura
                                             $stmt_items = $conn->prepare("SELECT p.nombre_producto, p.artista, fd.cantidad, fd.precio_unitario FROM factura_detalles fd JOIN productos p ON fd.id_producto = p.id WHERE fd.id_factura = ?");
                                             $stmt_items->bind_param("i", $factura['id']);
                                             $stmt_items->execute();
@@ -158,6 +152,13 @@ $resultado_facturas = $stmt_facturas->get_result();
                                             </li>
                                         <?php endwhile; $stmt_items->close(); ?>
                                     </ul>
+                                    
+                                    <div class="text-end mt-3 mb-2 me-3">
+                                        <a href="factura_imprimible.php?id=<?php echo $factura['id']; ?>" target="_blank" class="btn btn-sm text-white shadow-sm" style="background-color: #504E76;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#504E76'">
+                                            🖨️ Imprimir / Guardar PDF
+                                        </a>
+                                    </div>
+
                                 </div>
                             </div>
                             
@@ -169,7 +170,7 @@ $resultado_facturas = $stmt_facturas->get_result();
                 <div class="card bg-white border-0 shadow-sm p-5 text-center rounded-4" style="border: 2px solid #E6D8B8 !important;">
                     <h5 style="color: #8D4A23; font-family: 'Righteous', sans-serif;">Aún no has comprado ningún vinilo.</h5>
                     <p style="color: #504E76;">Explora nuestro catálogo y empieza tu colección.</p>
-                    <a href="index.php" class="btn text-white mt-3 mx-auto px-4 py-2" style="background-color: #C06C38; max-width: 200px;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#C06C38'">Ir a la Tienda</a>
+                    <a href="../index.php" class="btn text-white mt-3 mx-auto px-4 py-2" style="background-color: #C06C38; max-width: 200px;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#C06C38'">Ir a la Tienda</a>
                 </div>
             <?php endif; ?>
             
@@ -181,12 +182,12 @@ $resultado_facturas = $stmt_facturas->get_result();
   <div class="modal-dialog">
     <form class="modal-content" method="POST">
       <div class="modal-header" style="background-color: #E6D8B8;">
-        <h5 class="modal-title" style="font-family: 'Righteous';">Editar Dirección</h5>
+        <h5 class="modal-title" style="font-family: 'Righteous'; color: #504E76;">Editar Dirección</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <label class="form-label">Nueva Dirección de Entrega</label>
-        <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['direccion']); ?>" required>
+        <label class="form-label" style="color: #504E76;">Nueva Dirección de Entrega</label>
+        <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['direccion'] ?? ''); ?>" required>
       </div>
       <div class="modal-footer">
         <button type="submit" name="actualizar_datos" class="btn text-white" style="background-color: #504E76;">Guardar Cambios</button>
@@ -199,16 +200,16 @@ $resultado_facturas = $stmt_facturas->get_result();
   <div class="modal-dialog">
     <form class="modal-content" method="POST">
       <div class="modal-header" style="background-color: #E6D8B8;">
-        <h5 class="modal-title" style="font-family: 'Righteous';">Cambiar Contraseña</h5>
+        <h5 class="modal-title" style="font-family: 'Righteous'; color: #504E76;">Cambiar Contraseña</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
-            <label class="form-label">Nueva Contraseña</label>
+            <label class="form-label" style="color: #504E76;">Nueva Contraseña</label>
             <input type="password" name="n_pass" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Confirmar Nueva Contraseña</label>
+            <label class="form-label" style="color: #504E76;">Confirmar Nueva Contraseña</label>
             <input type="password" name="c_pass" class="form-control" required>
         </div>
       </div>
@@ -220,9 +221,11 @@ $resultado_facturas = $stmt_facturas->get_result();
 </div>
 
 <?php if ($datos_usuario['rol'] == 'admin'): ?>
-    <a href="../admin/admin_dashboard.php" class="btn mt-2 ms-3 mb-3 text-white" style="background-color: #8D4A23;">
-    Panel Administrador
-    </a>
+    <div class="container mb-4">
+        <a href="../../admin/admin_dashboard.php" class="btn text-white shadow-sm" style="background-color: #8D4A23;">
+            ⚙️ Panel Administrador
+        </a>
+    </div>
 <?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

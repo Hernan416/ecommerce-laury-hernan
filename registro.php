@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pass1 = $_POST['contrasena'];
     $pass2 = $_POST['confirmar_contrasena'];
 
-    // VALIDACIÓN: ¿Son iguales las contraseñas?
+    // VALIDACIÓN, Son iguales las contraseñas?
     if ($pass1 !== $pass2) {
         $error = "Las contraseñas no coinciden. Por favor, verifica.";
     } else {

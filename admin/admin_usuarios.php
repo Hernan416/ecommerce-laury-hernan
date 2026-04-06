@@ -6,7 +6,7 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 1. LÓGICA PARA AGREGAR USUARIO 
+// LÓGICA PARA AGREGAR USUARIO 
 if (isset($_POST['agregar_usuario'])) {
     $nombre = $conn->real_escape_string($_POST['nombre']);
     $correo = $conn->real_escape_string($_POST['correo']);
@@ -25,14 +25,14 @@ if (isset($_POST['agregar_usuario'])) {
     }
 }
 
-// 2. ELIMINAR 
+// ELIMINAR 
 if (isset($_GET['eliminar'])) {
     $id = intval($_GET['eliminar']);
     $conn->query("DELETE FROM usuarios WHERE id = $id");
     header("Location: admin_usuarios.php");
 }
 
-// 3. CAMBIAR ROL
+// CAMBIAR ROL
 if (isset($_GET['cambiar_rol'])) {
     $id = intval($_GET['cambiar_rol']);
     $nuevo_rol = $_GET['rol'];
