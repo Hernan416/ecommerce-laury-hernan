@@ -36,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_al_carrito'])
             $_SESSION['mensaje_alerta'] = "Hubo un error al guardar: " . $conn->error;
         }
     }
-
     
     header("Location: index.php");
     exit();
@@ -62,6 +61,7 @@ $resultado = $conn->query($sql);
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <?php include(__DIR__ . '/../../assets/head.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda - The Drop Vinyls</title>
@@ -71,7 +71,7 @@ $resultado = $conn->query($sql);
 <body style="background-color: #FDF8E2; font-family: 'Fredoka', sans-serif; color: #504E76;">
 
 <?php if (isset($_SESSION['mensaje_alerta'])): ?>
-    <div class="alert alert-success alert-dismissible fade show position-absolute top-0 start-50 translate-middle-x mt-3 shadow-sm" role="alert" style="z-index: 9999; background-color: #E6D8B8; border-color: #C06C38; color: #504E76; font-weight: 500;">
+    <div class="alert alert-success alert-dismissible fade show position-absolute top-0 start-50 translate-middle-x mt-4 shadow-sm" role="alert" style="z-index: 9999; background-color: #E6D8B8; border-color: #C06C38; color: #504E76; font-weight: 500;">
         <?php 
             echo $_SESSION['mensaje_alerta']; 
             unset($_SESSION['mensaje_alerta']); 
@@ -79,6 +79,11 @@ $resultado = $conn->query($sql);
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
+
+<!-- CINTA DE PRECIO DEL DÓLAR (NUEVO) -->
+<div id="cinta-dolar" class="text-center py-1 shadow-sm" style="background-color: #8D4A23; color: #FDF8E2; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px; z-index: 1000; position: relative;">
+    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="width: 0.8rem; height: 0.8rem;"></span> Cargando tasa del día...
+</div>
 
 <nav class="navbar navbar-expand-lg shadow-sm" style="background-color: #504E76; padding: 15px 0;">
     <div class="container">
@@ -191,6 +196,25 @@ $resultado = $conn->query($sql);
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SCRIPT PARA CARGAR LA TASA DEL DÓLAR (NUEVO) -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Apuntamos al endpoint oficial del BCV según la documentación
+    fetch('https://ve.dolarapi.com/v1/dolares/oficial')
+        .then(response => response.json())
+        .then(data => {
+            const tasa = data.promedio.toFixed(2);
+            document.getElementById('cinta-dolar').innerHTML = `🇻🇪 Tasa BCV Oficial: <strong>${tasa} Bs/USD</strong>`;
+        })
+        .catch(error => {
+            // Si hay un error de conexión con la API, ocultamos la cinta para no romper el diseño
+            document.getElementById('cinta-dolar').style.display = 'none';
+            console.error('Error obteniendo la tasa del dólar:', error);
+        });
+});
+</script>
+
 </body>
 </html>
 <?php $conn->close(); ?>

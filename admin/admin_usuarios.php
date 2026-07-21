@@ -46,6 +46,7 @@ $result = $conn->query("SELECT * FROM usuarios");
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <?php include(__DIR__ . '/../../assets/head.php'); ?>
     <meta charset="UTF-8">
     <title>Usuarios - The Drop Vinyls</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">

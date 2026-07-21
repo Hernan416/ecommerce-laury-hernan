@@ -27,6 +27,29 @@ if ($resultado_fac->num_rows === 0) {
 $factura = $resultado_fac->fetch_assoc();
 $stmt_fac->close();
 
+// --- CONSULTA A LA API OFICIAL DESDE PHP ---
+$tasa_cambio = 40.50; // Valor por defecto por si la API falla
+$api_url = "https://ve.dolarapi.com/v1/dolares/oficial";
+
+// Usamos cURL para llamar a la misma API que usas en el carrito
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $api_url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Máximo 3 segundos de espera
+$respuesta = curl_exec($ch);
+curl_close($ch);
+
+if ($respuesta) {
+    $datos = json_decode($respuesta, true);
+    if (isset($datos['promedio'])) {
+        $tasa_cambio = $datos['promedio'];
+    }
+}
+
+// Calculamos el total en Bs
+$total_bs = $factura['precio_final'] * $tasa_cambio;
+
 // 3. Obtener los productos exactos que compró en esa factura
 $stmt_det = $conn->prepare("SELECT fd.cantidad, fd.precio_unitario, p.nombre_producto, p.artista 
                             FROM factura_detalles fd 
@@ -55,12 +78,13 @@ $detalles = $stmt_det->get_result();
         
         table th { background-color: #504E76 !important; color: white !important; }
         .total-row { font-size: 1.2rem; font-weight: bold; background-color: #f8f9fa; }
+        .tasa-row { font-size: 0.85rem; background-color: #fff; }
 
-        /* Estilos EXCLUSIVOS para cuando se imprime a PDF (elimina sombras, márgenes y oculta botones) */
+        /* Estilos EXCLUSIVOS para cuando se imprime a PDF */
         @media print {
             body { background-color: #fff; margin: 0; }
             .hoja-factura { box-shadow: none; margin: 0; padding: 0; max-width: 100%; border-radius: 0; }
-            .btn-imprimir { display: none !important; } /* Oculta el botón "Imprimir" en el PDF */
+            .btn-imprimir { display: none !important; } 
             table th { background-color: #eee !important; color: #333 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
@@ -120,8 +144,17 @@ $detalles = $stmt_det->get_result();
             <?php endwhile; ?>
             
             <tr class="total-row">
-                <td colspan="3" class="text-end text-uppercase" style="color: #504E76;">Total Pagado:</td>
+                <td colspan="3" class="text-end text-uppercase" style="color: #504E76;">Total Pagado (USD):</td>
                 <td class="text-end" style="color: #C06C38;">$<?php echo number_format($factura['precio_final'], 2); ?></td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="3" class="text-end text-uppercase" style="color: #504E76;">Total Pagado (Bs):</td>
+                <td class="text-end" style="color: #C06C38;">Bs <?php echo number_format($total_bs, 2, ',', '.'); ?></td>
+            </tr>
+            <tr class="tasa-row border-white">
+                <td colspan="4" class="text-end text-muted pt-1 border-0">
+                    <em>Calculado a una tasa oficial BCV de Bs <?php echo number_format($tasa_cambio, 2, ',', '.'); ?></em>
+                </td>
             </tr>
         </tbody>
     </table>

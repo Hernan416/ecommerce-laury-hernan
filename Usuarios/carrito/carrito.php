@@ -44,6 +44,7 @@ $total = 0;
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <?php include(__DIR__ . '/../../assets/head.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Carrito - The Drop Vinyls</title>
@@ -110,12 +111,20 @@ $total = 0;
                     <h4 class="m-0" style="font-family: 'Righteous', sans-serif; color: #504E76;">Resumen</h4>
                 </div>
                 <div class="card-body p-4 bg-white">
-                    <div class="d-flex justify-content-between mb-3 fw-bold fs-5" style="color: #C06C38;">
+                    
+                    <!-- CAMBIO: Se ajustó el margen inferior de mb-3 a mb-0 para agruparlo con los bolívares -->
+                    <div class="d-flex justify-content-between mb-0 fw-bold fs-5" style="color: #C06C38;">
                         <span>Total:</span>
                         <span>$<?php echo number_format($total, 2); ?></span>
                     </div>
+                    
+                    <!-- NUEVO: Contenedor para el total en Bolívares (Oculto hasta que cargue la API) -->
+                    <div class="text-end mb-3" style="color: #8D4A23; font-weight: 500; font-size: 1.1rem; display: none;" id="contenedor-total-bs">
+                        <span id="total-bs"></span>
+                    </div>
+
                     <?php if ($total > 0): ?>
-                        <div class="d-grid">
+                        <div class="d-grid mt-3">
                             <a href="checkout.php" class="btn text-white fw-bold shadow-sm p-2 fs-5" style="background-color: #C06C38; font-family: 'Righteous', sans-serif; letter-spacing: 1px;" onmouseover="this.style.backgroundColor='#8D4A23'" onmouseout="this.style.backgroundColor='#C06C38'">COMPRAR</a>
                         </div>
                     <?php endif; ?>
@@ -126,6 +135,36 @@ $total = 0;
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- NUEVO: SCRIPT PARA CALCULAR EL TOTAL EN BS -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Tomamos el total exacto desde PHP
+    const totalDolares = <?php echo $total; ?>; 
+    
+    // Solo hacemos la consulta si hay algo en el carrito
+    if (totalDolares > 0) {
+        fetch('https://ve.dolarapi.com/v1/dolares/oficial')
+            .then(response => response.json())
+            .then(data => {
+                const tasa = data.promedio;
+                // Calculamos el total y lo limitamos a 2 decimales
+                const totalBs = (totalDolares * tasa).toFixed(2);
+                
+                // Formateamos para que se lea mejor (ej: 1.250,50)
+                const totalBsFormateado = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalBs);
+                
+                // Inyectamos el resultado y mostramos el contenedor
+                document.getElementById('total-bs').innerHTML = ` Bs. ${totalBsFormateado}`;
+                document.getElementById('contenedor-total-bs').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error obteniendo la tasa del dólar:', error);
+            });
+    }
+});
+</script>
+
 </body>
 </html>
 <?php 
