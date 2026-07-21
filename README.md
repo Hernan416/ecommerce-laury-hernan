@@ -8,29 +8,29 @@ The Drop Vinyls es una plataforma web completa diseñada para melómanos que bus
 
 👤 Para Usuarios (Clientes) 
 
-● Gestión de Perfil: Los usuarios pueden actualizar su nombre, correo y dirección desde un modal intuitivo.
+    ● Gestión de Perfil: Los usuarios pueden actualizar su nombre, correo y dirección desde un modal intuitivo.
 
-● Carrito Dinámico: Sistema para agregar, visualizar y eliminar productos antes de finalizar la compra.
+    ● Carrito Dinámico: Sistema para agregar, visualizar y eliminar productos antes de finalizar la compra.
 
-● Historial de Compras: Panel personalizado para revisar pedidos anteriores con montos y fechas.
+    ● Historial de Compras: Panel personalizado para revisar pedidos anteriores con montos y fechas.
 
-● Facturación: Generación automática de facturas en formato profesional con opción de impresión directa.
+    ● Facturación: Generación automática de facturas en formato profesional con opción de impresión directa.
 
 🖥️ Para Administradores 
 
-● Panel de Control: Interfaz para gestionar el inventario de la tienda.
+    ● Panel de Control: Interfaz para gestionar el inventario de la tienda.
 
-● CRUD de Productos: Capacidad para crear, editar y eliminar vinilos, artistas, precios y stock.
+    ● CRUD de Productos: Capacidad para crear, editar y eliminar vinilos, artistas, precios y stock.
 
-●Gestión de Categorías: Organización de productos por géneros musicales (Pop, Rock, Electrónica, etc.).
+    ● Gestión de Categorías: Organización de productos por géneros musicales (Pop, Rock, Electrónica, etc.).
 
 
 🛠️ Requisitos Previos
 Para poder instalar y ejecutar este proyecto, asegúrate de tener instalado en tu equipo:
 
-● Docker y Docker Compose
+    ● Docker y Docker Compose
 
-● Git
+    ● Git
 
 📥 Instalación Paso a Paso: 
 1. Clona el repositorio en tu máquina local:
@@ -59,8 +59,5 @@ El sistema expone endpoints seguros bajo el prefijo /api/v1/. Los principales re
 💾 Ejecución de Pruebas Unitarias
 El proyecto incluye un conjunto de pruebas unitarias con validaciones y asserts significativos. Para ejecutarlas, utiliza el comando correspondiente a tu entorno:
 Ejecutar según el framework (ej. php artisan test / pytest / npm test
-
-
-
 
 
