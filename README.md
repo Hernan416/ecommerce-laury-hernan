@@ -40,18 +40,23 @@ docker compose up --build
 Una vez ejecutado el comando, podrás acceder a la aplicación desde tu navegador o cliente HTTP.
 📚 Documentación de la API
 El sistema expone endpoints seguros bajo el prefijo /api/v1/. Los principales recursos disponibles son:
+
 Verbo HTTP
 Ruta
 Descripción
+
 GET
 /api/v1/vinilos
 Lista el catálogo público de vinilos disponibles en stock.
+
 POST
 /api/v1/pedidos
 Procesa el checkout, valida inventario y genera una nueva orden de compra.
+
 PUT
 /api/v1/usuario/{id}
 Actualiza los datos personales y la dirección de envío del cliente autenticado.
+
 DELETE
 /api/v1/pedidos/{id}
 Cancela un pedido específico y libera el inventario retenido.
