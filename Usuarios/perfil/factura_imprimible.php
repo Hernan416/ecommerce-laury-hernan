@@ -63,6 +63,7 @@ $detalles = $stmt_det->get_result();
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <?php include(__DIR__ . '/../../assets/head.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factura_00<?php echo $factura['id']; ?>_TheDropVinyls</title>

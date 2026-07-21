@@ -21,7 +21,7 @@ require 'auth_admin.php';
             <span class="navbar-brand text-white" style="font-family: 'Righteous';">
                 Panel Administrador
             </span>
-            <a href="../index.php" class="btn text-white" style="background-color: #C06C38;">Volver</a>
+            <a href="../Usuarios/perfil/perfil.php" class="btn text-white" style="background-color: #C06C38;">Volver</a>
         </div>
     </nav>
 
