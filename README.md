@@ -62,5 +62,7 @@ DELETE
 Cancela un pedido específico y libera el inventario retenido.
 
 (Nota: Si utilizas un framework como FastAPI, también puedes acceder a la documentación interactiva en /docs con el sistema corriendo).
+
 🧪 Ejecución de Pruebas Unitarias
 El proyecto incluye un conjunto de pruebas unitarias con validaciones y asserts significativos. Para ejecutarlas, utiliza el comando correspondiente a tu entorno:
+Ejecutar según el framework (ej. php artisan test / pytest / npm test
