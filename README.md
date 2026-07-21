@@ -7,8 +7,11 @@ The Drop Vinyls es una plataforma web completa diseñada para melómanos que bus
 🚀 Características Principales
 
 👤 Para Usuarios (Clientes) Gestión de Perfil: Los usuarios pueden actualizar su nombre, correo y dirección desde un modal intuitivo.
+
 Carrito Dinámico: Sistema para agregar, visualizar y eliminar productos antes de finalizar la compra.
+
 Historial de Compras: Panel personalizado para revisar pedidos anteriores con montos y fechas.
+
 Facturación: Generación automática de facturas en formato profesional con opción de impresión directa.
 
 🛠️ Para Administradores Panel de Control: Interfaz para gestionar el inventario de la tienda.
