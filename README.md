@@ -1,63 +1,65 @@
-Bienvenido a The Drop Vinyls esperamos te guste mucho nuestro sitio, encuentra los vinyls de tus artistas favoritos con el mejor precio :)
+# The Drop Vinyls - E-commerce de Vinilos
 
-💿 The Drop Vinyls - E-commerce de Vinilos
+The Drop Vinyls es una plataforma web completa diseñada para melómanos que buscan la experiencia del ritual del vinilo en la era digital. El sistema permite la gestión de inventario, navegación dinámica de productos, carrito de compras seguro y facturación con generación de registros PDF.
 
-The Drop Vinyls es una plataforma web completa diseñada para melómanos que buscan la experiencia del ritual del vinilo en la era digital. El sistema permite la gestión de inventario, navegación de productos, carrito de compras y generación de facturas imprimibles.
+---
 
-⭐ Características Principales:
+## 🛠️ Requisitos Previos
 
-👤 Para Usuarios (Clientes) 
+Para poder instalar y ejecutar este proyecto de forma local, asegúrate de tener instalado en tu equipo:
+- **Git** (Para clonar el repositorio)
+- **XAMPP / WAMP / MAMP** (Entorno con soporte para PHP 8.0+ y MySQL/MariaDB)
+- **PHPUnit** (Opcional, solo si deseas ejecutar las pruebas unitarias localmente)
 
-    ● Gestión de Perfil: Los usuarios pueden actualizar su nombre, correo y dirección desde un modal intuitivo.
+---
 
-    ● Carrito Dinámico: Sistema para agregar, visualizar y eliminar productos antes de finalizar la compra.
+## 📥 Instrucciones de Instalación
 
-    ● Historial de Compras: Panel personalizado para revisar pedidos anteriores con montos y fechas.
+Sigue estos pasos exactos para levantar el sistema desde cero:
 
-    ● Facturación: Generación automática de facturas en formato profesional con opción de impresión directa.
+1. **Clona el repositorio** en la carpeta pública de tu servidor local (ej. `C:\xampp\htdocs\`):
+   ```bash
+   git clone https://github.com/Hernan416/ecommerce-laury-hernan.git
+   cd ecommerce-laury-hernan/src
+   ```
 
-🖥️ Para Administradores 
+2. **Inicia los servicios** de Apache y MySQL desde el panel de control de XAMPP.
 
-    ● Panel de Control: Interfaz para gestionar el inventario de la tienda.
+3. **Configura la Base de Datos**:
+   - Abre tu navegador y dirígete a `http://localhost/phpmyadmin`.
+   - Crea una nueva base de datos llamada **`the_drop_vinyls`**.
+   - Importa el archivo `the_drop_vinyls.sql` que se encuentra en la raíz de la carpeta `src/`. Esto creará todas las tablas e insertará datos de prueba.
 
-    ● CRUD de Productos: Capacidad para crear, editar y eliminar vinilos, artistas, precios y stock.
+4. **Accede al sistema**:
+   Abre tu navegador y visita: `http://localhost/ecommerce-laury-hernan/src/`
 
-    ● Gestión de Categorías: Organización de productos por géneros musicales (Pop, Rock, Electrónica, etc.).
+---
 
+## 📚 Documentación de la API
 
-🛠️ Requisitos Previos
-Para poder instalar y ejecutar este proyecto, asegúrate de tener instalado en tu equipo:
+El sistema expone endpoints para comunicación asíncrona devolviendo formato JSON. A continuación se encuentra la tabla de los endpoints principales implementados en la arquitectura:
 
-    ● Docker y Docker Compose
+| Verbo HTTP | Ruta | Descripción | Request (Cuerpo) | Response Esperado (JSON) |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/pedidos.php` | Procesa de forma simulada (Mock) una transacción de pago externa. | `{"monto": 150.00, "id_usuario": 3}` | `{"status": "success", "message": "Pago procesado exitosamente.", "transaction_id": "txn_...", "monto_procesado": 150.00}` |
+| `GET` | `/Usuarios/index.php?ajax=1&buscar={query}` | Endpoint dinámico asíncrono para filtrar el catálogo sin recargar la página. | N/A (Se envía por query string) | Fragmento HTML con las tarjetas de los productos que coinciden con la búsqueda. |
 
-    ● Git
+---
 
-📥 Instalación Paso a Paso: 
-1. Clona el repositorio en tu máquina local:
-git clone https://github.com/Hernan416/ecommerce-laury-hernan.git
-cd ecommerce-laury-hernan
+## 💾 Ejecución de Pruebas Unitarias
 
-2. Configura las variables de entorno necesarias (copia el archivo de ejemplo si aplica):
-cp .env.example .env
+El proyecto cuenta con validaciones y pruebas para la lógica de negocios utilizando el framework **PHPUnit**, enfocadas en los patrones de diseño y cálculos de Checkout.
 
-🖱️ Cómo Levantar el Sistema con Docker
-El sistema cuenta con soporte completo para contenedores, permitiendo levantar la aplicación y su base de datos de forma automática sin pasos manuales adicionales:
-docker compose up --build
+Para ejecutar las pruebas en tu entorno local (asumiendo que tienes el binario `phpunit.phar` en la raíz del proyecto o PHPUnit instalado globalmente):
 
-Una vez ejecutado el comando, podrás acceder a la aplicación desde tu navegador o cliente HTTP.
+1. Abre tu terminal de comandos en la carpeta raíz del proyecto.
+2. Ejecuta el siguiente comando para correr todas las pruebas:
+   ```bash
+   php phpunit.phar tests/CheckoutTest.php
+   ```
+   *Alternativamente, si usas la ruta binaria instalada globalmente:*
+   ```bash
+   phpunit tests/CheckoutTest.php
+   ```
 
-📚 Documentación de la API
-El sistema expone endpoints seguros bajo el prefijo /api/v1/. Los principales recursos disponibles son:
-
-| Verbo HTTP | Ruta     | Descripción                |
-| :-------- | :------- | :------------------------- |
-| `GET` | `/api/v1/vinilos` | Lista el catálogo público de vinilos disponibles en stock. |
-| `POST` | `/api/v1/pedidos` | Procesa el checkout, valida inventario y genera una nueva orden de compra. |
-| `PUT` | `/api/v1/usuario/{id}` | Actualiza los datos personales y la dirección de envío del cliente autenticado. |
-| `DELETE` | `/api/v1/pedidos/{id}` | Cancela un pedido específico y libera el inventario retenido.|
-
-💾 Ejecución de Pruebas Unitarias
-El proyecto incluye un conjunto de pruebas unitarias con validaciones y asserts significativos. Para ejecutarlas, utiliza el comando correspondiente a tu entorno:
-Ejecutar según el framework (ej. php artisan test / pytest / npm test
-
-
+3. Verás la salida de validación verde confirmando que la herencia y las estrategias de descuento (Patrón Strategy) funcionan correctamente de forma matemática.

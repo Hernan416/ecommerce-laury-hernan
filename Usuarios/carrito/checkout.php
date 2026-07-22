@@ -111,10 +111,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_total->bind_param("i", $id_usuario);
         $stmt_total->execute();
         $result_total = $stmt_total->get_result()->fetch_assoc();
-        $precio_final = $result_total['total'] ? $result_total['total'] : 0;
+        $subtotal = $result_total['total'] ? $result_total['total'] : 0;
         $stmt_total->close();
 
-        if ($precio_final > 0) {
+        if ($subtotal > 0) {
+            // Demostración de Patrón Strategy y Composición (SOLID)
+            require_once __DIR__ . '/../../Classes/DiscountStrategy.php';
+            require_once __DIR__ . '/../../Classes/CheckoutCalculator.php';
+            
+            // Usamos la estrategia de descuento por volumen (10% si es mayor a 100)
+            $strategy = new \Classes\BulkDiscountStrategy();
+            $calculator = new \Classes\CheckoutCalculator($strategy);
+            $precio_final = $calculator->calculateTotal($subtotal);
+
             // Reservar temporalmente el stock (bloqueo por 10 min simulado al restar inmediatamente)
             $sql_stock = "UPDATE productos p JOIN carrito c ON p.id = c.id_producto SET p.stock = p.stock - c.cantidad WHERE c.id_usuario = ?";
             $stmt_stock = $conn->prepare($sql_stock);
