@@ -1,5 +1,5 @@
 <?php
-$host = "localhost";
+$host = getenv("DB_HOST") ?: "localhost";
 $user = "root";
 $password = "";
 $dbname = "the_drop_vinyls"; // El nombre de la base de datos que está en tu archivo .sql

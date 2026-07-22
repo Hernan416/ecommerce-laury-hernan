@@ -1,6 +1,6 @@
 <?php
 session_start();
-$host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
+$host = getenv("DB_HOST") ?: "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
 
 $error = ""; $exito = "";

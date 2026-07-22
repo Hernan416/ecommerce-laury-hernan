@@ -5,7 +5,7 @@ session_start();
 if (!isset($_SESSION['usuario_id'])) { die("Acceso denegado. Por favor inicia sesión."); }
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) { die("Factura no válida."); }
 
-$host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
+$host = getenv("DB_HOST") ?: "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) { die("Error de conexión: " . $conn->connect_error); }
 

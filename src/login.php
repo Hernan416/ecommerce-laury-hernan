@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$host = "localhost";
+$host = getenv("DB_HOST") ?: "localhost";
 $user = "root";
 $pass = "";
 $db = "the_drop_vinyls";

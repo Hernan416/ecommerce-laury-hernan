@@ -1,12 +1,12 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
 // CONEXION A BASE DE DATOS
-$host = "localhost";
+$host = getenv("DB_HOST") ?: "localhost";
 $user = "root";
 $pass = "";
 $db = "the_drop_vinyls";
@@ -72,26 +72,36 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         alt="Portada de <?php echo htmlspecialchars($row['nombre_producto']); ?>"
                         style="height: 250px; object-fit: cover; background-color: #E6D8B8; border-bottom: 2px solid #E6D8B8;">
                     <div class="card-body d-flex flex-column p-4 bg-white">
-                        <h5 class="card-title mb-1" style="font-family: 'Righteous', sans-serif; color: #504E76; font-size: 1.3rem;">
+                        <h5 class="card-title mb-1"
+                            style="font-family: 'Righteous', sans-serif; color: #504E76; font-size: 1.3rem;">
                             <?php echo htmlspecialchars($row['nombre_producto']); ?>
                         </h5>
                         <p class="card-text fw-medium mb-1" style="color: #8D4A23;">
                             <?php echo htmlspecialchars($row['artista']); ?>
                         </p>
-                        <span class="badge mb-3 align-self-start" style="background-color: #E6D8B8; color: #504E76;"><?php echo htmlspecialchars($row['nombre_categoria']); ?></span>
+                        <span class="badge mb-3 align-self-start"
+                            style="background-color: #E6D8B8; color: #504E76;"><?php echo htmlspecialchars($row['nombre_categoria']); ?></span>
                         <div class="mt-auto">
-                            <p class="mb-3 fw-bold fs-4" style="color: #C06C38;">$<?php echo number_format($row['precio'], 2); ?></p>
+                            <p class="mb-3 fw-bold fs-4" style="color: #C06C38;">$<?php echo number_format($row['precio'], 2); ?>
+                            </p>
                             <?php if ($row['stock'] > 0): ?>
                                 <form action="index.php" method="POST" class="m-0 p-0">
                                     <input type="hidden" name="id_producto" value="<?php echo $row['id']; ?>">
-                                    <input type="hidden" name="titulo_producto" value="<?php echo htmlspecialchars($row['nombre_producto']); ?>">
-                                    <input type="hidden" name="artista_producto" value="<?php echo htmlspecialchars($row['artista']); ?>">
+                                    <input type="hidden" name="titulo_producto"
+                                        value="<?php echo htmlspecialchars($row['nombre_producto']); ?>">
+                                    <input type="hidden" name="artista_producto"
+                                        value="<?php echo htmlspecialchars($row['artista']); ?>">
                                     <input type="hidden" name="precio_producto" value="<?php echo $row['precio']; ?>">
-                                    <input type="hidden" name="imagen_producto" value="<?php echo htmlspecialchars($row['imagen_portada']); ?>">
-                                    <button type="submit" name="agregar_al_carrito" class="btn w-100 fw-medium text-white shadow-sm" style="background-color: #504E76; padding: 10px;" onmouseover="this.style.backgroundColor='#C06C38'" onmouseout="this.style.backgroundColor='#504E76'">Agregar al Carrito</button>
+                                    <input type="hidden" name="imagen_producto"
+                                        value="<?php echo htmlspecialchars($row['imagen_portada']); ?>">
+                                    <button type="submit" name="agregar_al_carrito" class="btn w-100 fw-medium text-white shadow-sm"
+                                        style="background-color: #504E76; padding: 10px;"
+                                        onmouseover="this.style.backgroundColor='#C06C38'"
+                                        onmouseout="this.style.backgroundColor='#504E76'">Agregar al Carrito</button>
                                 </form>
                             <?php else: ?>
-                                <button disabled class="btn w-100 fw-medium text-white shadow-sm" style="background-color: #A0A0A0; padding: 10px; cursor: not-allowed;">Agotado</button>
+                                <button disabled class="btn w-100 fw-medium text-white shadow-sm"
+                                    style="background-color: #A0A0A0; padding: 10px; cursor: not-allowed;">Agotado</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -103,7 +113,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         ?>
         <div class="col-12 text-center py-5">
             <h4 style="color: #8D4A23;">No encontramos vinilos en esta búsqueda/categoría.</h4>
-            <a href="index.php" class="btn text-white mt-3 px-4 py-2 fw-medium" style="background-color: #C06C38;">Ver todo el catálogo</a>
+            <a href="index.php" class="btn text-white mt-3 px-4 py-2 fw-medium" style="background-color: #C06C38;">Ver todo el
+                catálogo</a>
         </div>
         <?php
     }
@@ -276,8 +287,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                                             </button>
                                         </form>
                                     <?php else: ?>
-                                        <button disabled
-                                            class="btn w-100 fw-medium text-white shadow-sm"
+                                        <button disabled class="btn w-100 fw-medium text-white shadow-sm"
                                             style="background-color: #A0A0A0; padding: 10px; cursor: not-allowed;">
                                             Agotado
                                         </button>
@@ -321,10 +331,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             e.preventDefault();
             const query = document.getElementById('searchInput').value;
             const grid = document.getElementById('catalogoGrid');
-            
+
             // Opcional: mostrar un estado de carga rápido
             grid.style.opacity = '0.5';
-            
+
             fetch('index.php?ajax=1&buscar=' + encodeURIComponent(query))
                 .then(response => response.text())
                 .then(html => {

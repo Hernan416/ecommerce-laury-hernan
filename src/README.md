@@ -8,8 +8,7 @@ The Drop Vinyls es una plataforma web completa diseñada para melómanos que bus
 
 Para poder instalar y ejecutar este proyecto de forma local, asegúrate de tener instalado en tu equipo:
 - **Git** (Para clonar el repositorio)
-- **XAMPP / WAMP / MAMP** (Entorno con soporte para PHP 8.0+ y MySQL/MariaDB)
-- **PHPUnit** (Opcional, solo si deseas ejecutar las pruebas unitarias localmente)
+- **Docker y Docker Compose** (Requerido para levantar el entorno aislado)
 
 ---
 
@@ -17,21 +16,20 @@ Para poder instalar y ejecutar este proyecto de forma local, asegúrate de tener
 
 Sigue estos pasos exactos para levantar el sistema desde cero:
 
-1. **Clona el repositorio** en la carpeta pública de tu servidor local (ej. `C:\xampp\htdocs\`):
+1. **Clona el repositorio** en tu máquina:
    ```bash
    git clone https://github.com/Hernan416/ecommerce-laury-hernan.git
-   cd ecommerce-laury-hernan/src
+   cd ecommerce-laury-hernan
    ```
 
-2. **Inicia los servicios** de Apache y MySQL desde el panel de control de XAMPP.
+2. **Levanta el sistema con Docker**:
+   Ejecuta el siguiente comando en la raíz del proyecto para construir la imagen y levantar los contenedores de la aplicación y la base de datos (la cual se importará automáticamente):
+   ```bash
+   docker compose up --build
+   ```
 
-3. **Configura la Base de Datos**:
-   - Abre tu navegador y dirígete a `http://localhost/phpmyadmin`.
-   - Crea una nueva base de datos llamada **`the_drop_vinyls`**.
-   - Importa el archivo `the_drop_vinyls.sql` que se encuentra en la raíz de la carpeta `src/`. Esto creará todas las tablas e insertará datos de prueba.
-
-4. **Accede al sistema**:
-   Abre tu navegador y visita: `http://localhost/ecommerce-laury-hernan/src/`
+3. **Accede al sistema**:
+   Abre tu navegador y visita: `http://localhost:8000`
 
 ---
 
@@ -50,16 +48,16 @@ El sistema expone endpoints para comunicación asíncrona devolviendo formato JS
 
 El proyecto cuenta con validaciones y pruebas para la lógica de negocios utilizando el framework **PHPUnit**, enfocadas en los patrones de diseño y cálculos de Checkout.
 
-Para ejecutar las pruebas en tu entorno local (asumiendo que tienes el binario `phpunit.phar` en la raíz del proyecto o PHPUnit instalado globalmente):
+Para ejecutar las pruebas en tu entorno local:
 
-1. Abre tu terminal de comandos en la carpeta raíz del proyecto.
-2. Ejecuta el siguiente comando para correr todas las pruebas:
+1. Abre una **nueva** terminal en la carpeta raíz del proyecto (sin cerrar la terminal donde Docker está corriendo).
+2. Entra al contenedor del servidor web ejecutando:
    ```bash
-   php phpunit.phar tests/CheckoutTest.php
+   docker compose exec app bash
    ```
-   *Alternativamente, si usas la ruta binaria instalada globalmente:*
+3. Estando dentro del contenedor, ejecuta las pruebas con el siguiente comando:
    ```bash
-   phpunit tests/CheckoutTest.php
+   php phpunit-10.phar tests/CheckoutTest.php
    ```
 
-3. Verás la salida de validación verde confirmando que la herencia y las estrategias de descuento (Patrón Strategy) funcionan correctamente de forma matemática.
+4. Verás la salida de validación verde confirmando que la herencia y las estrategias de descuento (Patrón Strategy) funcionan correctamente de forma matemática.

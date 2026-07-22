@@ -5,7 +5,7 @@ if (!isset($conn)) {
     @include '../conexion.php';
 }
 if (!isset($conn)) {
-    $conn = new mysqli("localhost", "root", "", "the_drop_vinyls");
+    $conn = new mysqli(getenv("DB_HOST") ?: "localhost", "root", "", "the_drop_vinyls");
 }
 
 // Consultar los logs seleccionando explícitamente el ID del log para que no choque con el ID del usuario

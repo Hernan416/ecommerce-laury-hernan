@@ -1,6 +1,6 @@
 <?php
 require 'auth_admin.php';
-$conn = new mysqli("localhost", "root", "", "the_drop_vinyls");
+$conn = new mysqli(getenv("DB_HOST") ?: "localhost", "root", "", "the_drop_vinyls");
 
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);

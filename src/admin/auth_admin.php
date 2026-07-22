@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
 
 // Solución automática: si el ID no está en la sesión, lo buscamos en la base de datos
 if (!isset($_SESSION['id'])) {
-    $conn_temp = new mysqli("localhost", "root", "", "the_drop_vinyls");
+    $conn_temp = new mysqli(getenv("DB_HOST") ?: "localhost", "root", "", "the_drop_vinyls");
     if (!$conn_temp->connect_error && isset($_SESSION['usuario'])) {
         $user_session = $conn_temp->real_escape_string($_SESSION['usuario']);
         // Busca al usuario por su nombre o correo en tu tabla

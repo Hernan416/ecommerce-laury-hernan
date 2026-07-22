@@ -2,7 +2,7 @@
 session_start();
 if (!isset($_SESSION['usuario_id'])) { header("Location: ../login/login.php"); exit(); }
 
-$host = "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
+$host = getenv("DB_HOST") ?: "localhost"; $user = "root"; $pass = ""; $db = "the_drop_vinyls";
 $conn = new mysqli($host, $user, $pass, $db);
 $id_usuario = $_SESSION['usuario_id']; 
 $mensaje = "";

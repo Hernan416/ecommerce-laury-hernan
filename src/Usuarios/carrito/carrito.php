@@ -6,7 +6,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-$host = "localhost";
+$host = getenv("DB_HOST") ?: "localhost";
 $user = "root";
 $pass = "";
 $db   = "the_drop_vinyls";
