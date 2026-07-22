@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_al_carrito'])
 
 // CONSULTAS PARA MOSTRAR LOS PRODUCTOS
 $busqueda = "";
-$sql = "SELECT p.*, c.nombre_categoria FROM productos p LEFT JOIN categorias c ON p.id_categoria = c.id WHERE p.stock > 0";
+$sql = "SELECT p.*, c.nombre_categoria FROM productos p LEFT JOIN categorias c ON p.id_categoria = c.id WHERE 1=1";
 
 if (isset($_GET['buscar']) && !empty(trim($_GET['buscar']))) {
     $busqueda = $conn->real_escape_string(trim($_GET['buscar']));
@@ -61,6 +61,55 @@ if (isset($_GET['categoria']) && is_numeric($_GET['categoria'])) {
 }
 
 $resultado = $conn->query($sql);
+
+if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    if ($resultado->num_rows > 0) {
+        while ($row = $resultado->fetch_assoc()) {
+            ?>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-3" style="border: 2px solid #E6D8B8 !important;">
+                    <img src="<?php echo htmlspecialchars($row['imagen_portada']); ?>" class="card-img-top"
+                        alt="Portada de <?php echo htmlspecialchars($row['nombre_producto']); ?>"
+                        style="height: 250px; object-fit: cover; background-color: #E6D8B8; border-bottom: 2px solid #E6D8B8;">
+                    <div class="card-body d-flex flex-column p-4 bg-white">
+                        <h5 class="card-title mb-1" style="font-family: 'Righteous', sans-serif; color: #504E76; font-size: 1.3rem;">
+                            <?php echo htmlspecialchars($row['nombre_producto']); ?>
+                        </h5>
+                        <p class="card-text fw-medium mb-1" style="color: #8D4A23;">
+                            <?php echo htmlspecialchars($row['artista']); ?>
+                        </p>
+                        <span class="badge mb-3 align-self-start" style="background-color: #E6D8B8; color: #504E76;"><?php echo htmlspecialchars($row['nombre_categoria']); ?></span>
+                        <div class="mt-auto">
+                            <p class="mb-3 fw-bold fs-4" style="color: #C06C38;">$<?php echo number_format($row['precio'], 2); ?></p>
+                            <?php if ($row['stock'] > 0): ?>
+                                <form action="index.php" method="POST" class="m-0 p-0">
+                                    <input type="hidden" name="id_producto" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="titulo_producto" value="<?php echo htmlspecialchars($row['nombre_producto']); ?>">
+                                    <input type="hidden" name="artista_producto" value="<?php echo htmlspecialchars($row['artista']); ?>">
+                                    <input type="hidden" name="precio_producto" value="<?php echo $row['precio']; ?>">
+                                    <input type="hidden" name="imagen_producto" value="<?php echo htmlspecialchars($row['imagen_portada']); ?>">
+                                    <button type="submit" name="agregar_al_carrito" class="btn w-100 fw-medium text-white shadow-sm" style="background-color: #504E76; padding: 10px;" onmouseover="this.style.backgroundColor='#C06C38'" onmouseout="this.style.backgroundColor='#504E76'">Agregar al Carrito</button>
+                                </form>
+                            <?php else: ?>
+                                <button disabled class="btn w-100 fw-medium text-white shadow-sm" style="background-color: #A0A0A0; padding: 10px; cursor: not-allowed;">Agotado</button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+    } else {
+        ?>
+        <div class="col-12 text-center py-5">
+            <h4 style="color: #8D4A23;">No encontramos vinilos en esta búsqueda/categoría.</h4>
+            <a href="index.php" class="btn text-white mt-3 px-4 py-2 fw-medium" style="background-color: #C06C38;">Ver todo el catálogo</a>
+        </div>
+        <?php
+    }
+    $conn->close();
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -113,9 +162,9 @@ $resultado = $conn->query($sql);
             </button>
 
             <div class="collapse navbar-collapse" id="navbarContenido">
-                <form class="d-flex mx-auto my-2 my-lg-0 w-100" action="index.php" method="GET"
+                <form id="searchForm" class="d-flex mx-auto my-2 my-lg-0 w-100" action="index.php" method="GET"
                     style="max-width: 400px;">
-                    <input class="form-control me-2 border-0 shadow-sm" type="search" name="buscar"
+                    <input id="searchInput" class="form-control me-2 border-0 shadow-sm" type="search" name="buscar"
                         placeholder="Buscar artista o álbum..." value="<?php echo htmlspecialchars($busqueda); ?>"
                         style="font-family: 'Fredoka', sans-serif;">
                     <button class="btn text-white fw-medium shadow-sm px-4" type="submit"
@@ -181,7 +230,7 @@ $resultado = $conn->query($sql);
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="catalogoGrid">
             <?php if ($resultado->num_rows > 0): ?>
                 <?php while ($row = $resultado->fetch_assoc()): ?>
                     <div class="col">
@@ -207,24 +256,32 @@ $resultado = $conn->query($sql);
                                         $<?php echo number_format($row['precio'], 2); ?>
                                     </p>
 
-                                    <form action="index.php" method="POST" class="m-0 p-0">
-                                        <input type="hidden" name="id_producto" value="<?php echo $row['id']; ?>">
-                                        <input type="hidden" name="titulo_producto"
-                                            value="<?php echo htmlspecialchars($row['nombre_producto']); ?>">
-                                        <input type="hidden" name="artista_producto"
-                                            value="<?php echo htmlspecialchars($row['artista']); ?>">
-                                        <input type="hidden" name="precio_producto" value="<?php echo $row['precio']; ?>">
-                                        <input type="hidden" name="imagen_producto"
-                                            value="<?php echo $row['imagen_portada']; ?>">
+                                    <?php if ($row['stock'] > 0): ?>
+                                        <form action="index.php" method="POST" class="m-0 p-0">
+                                            <input type="hidden" name="id_producto" value="<?php echo $row['id']; ?>">
+                                            <input type="hidden" name="titulo_producto"
+                                                value="<?php echo htmlspecialchars($row['nombre_producto']); ?>">
+                                            <input type="hidden" name="artista_producto"
+                                                value="<?php echo htmlspecialchars($row['artista']); ?>">
+                                            <input type="hidden" name="precio_producto" value="<?php echo $row['precio']; ?>">
+                                            <input type="hidden" name="imagen_producto"
+                                                value="<?php echo $row['imagen_portada']; ?>">
 
-                                        <button type="submit" name="agregar_al_carrito"
+                                            <button type="submit" name="agregar_al_carrito"
+                                                class="btn w-100 fw-medium text-white shadow-sm"
+                                                style="background-color: #504E76; padding: 10px;"
+                                                onmouseover="this.style.backgroundColor='#C06C38'"
+                                                onmouseout="this.style.backgroundColor='#504E76'">
+                                                Agregar al Carrito
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <button disabled
                                             class="btn w-100 fw-medium text-white shadow-sm"
-                                            style="background-color: #504E76; padding: 10px;"
-                                            onmouseover="this.style.backgroundColor='#C06C38'"
-                                            onmouseout="this.style.backgroundColor='#504E76'">
-                                            Agregar al Carrito
+                                            style="background-color: #A0A0A0; padding: 10px; cursor: not-allowed;">
+                                            Agotado
                                         </button>
-                                    </form>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -256,6 +313,27 @@ $resultado = $conn->query($sql);
                     // Si hay un error de conexión con la API, ocultamos la cinta para no romper el diseño
                     document.getElementById('cinta-dolar').style.display = 'none';
                     console.error('Error obteniendo la tasa del dólar:', error);
+                });
+        });
+
+        // SCRIPT PARA BÚSQUEDA ASÍNCRONA (AJAX)
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            const grid = document.getElementById('catalogoGrid');
+            
+            // Opcional: mostrar un estado de carga rápido
+            grid.style.opacity = '0.5';
+            
+            fetch('index.php?ajax=1&buscar=' + encodeURIComponent(query))
+                .then(response => response.text())
+                .then(html => {
+                    grid.innerHTML = html;
+                    grid.style.opacity = '1';
+                })
+                .catch(error => {
+                    console.error('Error en búsqueda:', error);
+                    grid.style.opacity = '1';
                 });
         });
     </script>

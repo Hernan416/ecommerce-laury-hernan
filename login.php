@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $correo = $_POST['correo'];
     $contrasena_ingresada = $_POST['contrasena'];
 
-    $stmt = $conn->prepare("SELECT id, nombre, apellido, contrasena, rol FROM usuarios WHERE correo = ?");
+    $stmt = $conn->prepare("SELECT id, nombre, apellido, contrasena, rol, estado_cuenta, intentos_fallidos, bloqueado_hasta FROM usuarios WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -26,22 +26,61 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($resultado->num_rows > 0) {
         $usuario = $resultado->fetch_assoc();
 
-        if ($contrasena_ingresada === $usuario['contrasena']) {
-            $_SESSION['usuario_id'] = $usuario['id'];
-            $_SESSION['usuario_nombre'] = $usuario['nombre'];
-            $_SESSION['usuario_rol'] = $usuario['rol'];
-
-            if ($usuario['rol'] == 'admin') {
-                header("Location: ./admin/admin_dashboard.php");
-            } else {
-                header("Location: ./Usuarios/index.php"); // Redirige a Usuarios/index.php
-            }
-            exit();
+        if ($usuario['estado_cuenta'] === 'suspendido') {
+            $error = "Error de autenticación o cuenta suspendida.";
         } else {
-            $error = "Contraseña incorrecta.";
+            // Verificar si está bloqueado temporalmente
+            $bloqueado = false;
+            if ($usuario['bloqueado_hasta'] !== null) {
+                $bloqueado_hasta = new DateTime($usuario['bloqueado_hasta']);
+                $ahora = new DateTime();
+                if ($ahora < $bloqueado_hasta) {
+                    $bloqueado = true;
+                    $error = "Demasiados intentos fallidos. Intente nuevamente más tarde.";
+                } else {
+                    // El tiempo de bloqueo ya pasó, resetear intentos
+                    $reset_stmt = $conn->prepare("UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id = ?");
+                    $reset_stmt->bind_param("i", $usuario['id']);
+                    $reset_stmt->execute();
+                    $usuario['intentos_fallidos'] = 0;
+                }
+            }
+
+            if (!$bloqueado) {
+                if ($contrasena_ingresada === $usuario['contrasena']) {
+                    // Éxito: resetear intentos fallidos
+                    $reset_stmt = $conn->prepare("UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id = ?");
+                    $reset_stmt->bind_param("i", $usuario['id']);
+                    $reset_stmt->execute();
+
+                    $_SESSION['usuario_id'] = $usuario['id'];
+                    $_SESSION['usuario_nombre'] = $usuario['nombre'];
+                    $_SESSION['usuario_rol'] = $usuario['rol'];
+
+                    if ($usuario['rol'] == 'admin') {
+                        header("Location: ./admin/admin_dashboard.php");
+                    } else {
+                        header("Location: ./Usuarios/index.php"); // Redirige a Usuarios/index.php
+                    }
+                    exit();
+                } else {
+                    // Fallo: Incrementar intentos fallidos
+                    $intentos = $usuario['intentos_fallidos'] + 1;
+                    $bloqueado_hasta = null;
+                    if ($intentos >= 5) {
+                        $bloqueado_hasta = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+                    }
+                    
+                    $update_stmt = $conn->prepare("UPDATE usuarios SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id = ?");
+                    $update_stmt->bind_param("isi", $intentos, $bloqueado_hasta, $usuario['id']);
+                    $update_stmt->execute();
+
+                    $error = "Error de autenticación. Credenciales inválidas.";
+                }
+            }
         }
     } else {
-        $error = "No existe una cuenta con este correo.";
+        $error = "Error de autenticación. Credenciales inválidas.";
     }
     $stmt->close();
 }

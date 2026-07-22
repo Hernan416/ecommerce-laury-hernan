@@ -11,8 +11,19 @@ $mensaje = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['actualizar_datos'])) {
         $nueva_direccion = $conn->real_escape_string($_POST['direccion']);
-        $conn->query("UPDATE usuarios SET direccion = '$nueva_direccion' WHERE id = '$id_usuario'");
-        $mensaje = "Datos actualizados correctamente.";
+        $nuevo_pais = $conn->real_escape_string($_POST['pais']);
+        $nueva_ciudad = $conn->real_escape_string($_POST['ciudad']);
+        $nuevo_estado = $conn->real_escape_string($_POST['estado_provincia']);
+        $nuevo_cp = $conn->real_escape_string($_POST['codigo_postal']);
+        $nuevo_tel = $conn->real_escape_string($_POST['telefono']);
+        
+        $conn->query("UPDATE usuarios SET direccion = '$nueva_direccion', pais = '$nuevo_pais', ciudad = '$nueva_ciudad', estado_provincia = '$nuevo_estado', codigo_postal = '$nuevo_cp', telefono = '$nuevo_tel' WHERE id = '$id_usuario'");
+        
+        // Simular envío de correo electrónico
+        $log_entry = "[" . date('Y-m-d H:i:s') . "] Correo enviado a usuario ID $id_usuario: Notificación de seguridad - Tu perfil ha sido actualizado.\n";
+        file_put_contents(__DIR__ . '/../../email_log.txt', $log_entry, FILE_APPEND);
+
+        $mensaje = "Datos actualizados correctamente. Se ha enviado un correo de notificación.";
     }
 
     if (isset($_POST['cambiar_pass'])) {
@@ -29,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Obtener datos del usuario
-$stmt_user = $conn->prepare("SELECT nombre, apellido, correo, rol, fecha_registro, direccion FROM usuarios WHERE id = ?");
+$stmt_user = $conn->prepare("SELECT nombre, apellido, correo, rol, fecha_registro, direccion, pais, ciudad, estado_provincia, codigo_postal, telefono FROM usuarios WHERE id = ?");
 $stmt_user->bind_param("i", $id_usuario);
 $stmt_user->execute();
 $datos_usuario = $stmt_user->get_result()->fetch_assoc();
@@ -98,7 +109,13 @@ $resultado_facturas = $stmt_facturas->get_result();
 
                  <div class="mb-3">
                      <span class="d-block fw-bold" style="color: #8D4A23;">Dirección Registrada:</span>
-                     <span style="color: #504E76;"><?php echo htmlspecialchars($datos_usuario['direccion'] ?? 'Sin dirección registrada'); ?></span>
+                     <span style="color: #504E76;">
+                        <?php echo htmlspecialchars($datos_usuario['direccion'] ?? 'Sin dirección registrada'); ?><br>
+                        <?php if ($datos_usuario['ciudad']): ?>
+                            <?php echo htmlspecialchars($datos_usuario['ciudad'] . ', ' . $datos_usuario['estado_provincia'] . ', ' . $datos_usuario['pais'] . '. CP: ' . $datos_usuario['codigo_postal']); ?><br>
+                            Tel: <?php echo htmlspecialchars($datos_usuario['telefono']); ?>
+                        <?php endif; ?>
+                     </span>
                  </div>
                     
                     <div class="mb-4">
@@ -187,8 +204,30 @@ $resultado_facturas = $stmt_facturas->get_result();
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <label class="form-label" style="color: #504E76;">Nueva Dirección de Entrega</label>
-        <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['direccion'] ?? ''); ?>" required>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">País</label>
+            <input type="text" name="pais" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['pais'] ?? ''); ?>" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">Estado/Provincia</label>
+            <input type="text" name="estado_provincia" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['estado_provincia'] ?? ''); ?>" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">Ciudad</label>
+            <input type="text" name="ciudad" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['ciudad'] ?? ''); ?>" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">Código Postal</label>
+            <input type="text" name="codigo_postal" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['codigo_postal'] ?? ''); ?>" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">Dirección Exacta (Calle/Av, Casa/Apto)</label>
+            <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['direccion'] ?? ''); ?>" required>
+        </div>
+        <div class="mb-2">
+            <label class="form-label" style="color: #504E76;">Número de Teléfono</label>
+            <input type="tel" name="telefono" class="form-control" value="<?php echo htmlspecialchars($datos_usuario['telefono'] ?? ''); ?>" required>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="submit" name="actualizar_datos" class="btn text-white" style="background-color: #504E76;">Guardar Cambios</button>

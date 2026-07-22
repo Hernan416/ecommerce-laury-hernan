@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-04-2026 a las 03:31:15
+-- Tiempo de generación: 22-07-2026 a las 18:51:03
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -24,6 +24,20 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `audit_logs`
+--
+
+CREATE TABLE `audit_logs` (
+  `id` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `accion` varchar(255) NOT NULL,
+  `detalles` text DEFAULT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `carrito`
 --
 
@@ -40,7 +54,8 @@ CREATE TABLE `carrito` (
 --
 
 INSERT INTO `carrito` (`id`, `id_usuario`, `id_producto`, `cantidad`, `fecha_agregado`) VALUES
-(4, 4, 2, 1, '2026-04-04 20:58:49');
+(4, 4, 2, 1, '2026-04-04 20:58:49'),
+(14, 6, 4, 1, '2026-07-14 22:05:15');
 
 -- --------------------------------------------------------
 
@@ -74,6 +89,7 @@ CREATE TABLE `facturas` (
   `id` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `precio_final` decimal(10,2) NOT NULL,
+  `estado` enum('creado','pagado','cancelado') DEFAULT 'creado',
   `fecha_emision` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -86,7 +102,8 @@ INSERT INTO `facturas` (`id`, `id_usuario`, `precio_final`, `fecha_emision`) VAL
 (2, 3, 28.00, '2026-04-04 20:53:22'),
 (3, 2, 84.00, '2026-04-05 23:45:47'),
 (4, 2, 68.49, '2026-04-06 00:36:06'),
-(5, 2, 85.00, '2026-04-06 00:37:45');
+(5, 2, 85.00, '2026-04-06 00:37:45'),
+(6, 6, 63.99, '2026-07-14 22:04:35');
 
 -- --------------------------------------------------------
 
@@ -115,7 +132,9 @@ INSERT INTO `factura_detalles` (`id`, `id_factura`, `id_producto`, `cantidad`, `
 (7, 4, 1, 1, 35.99),
 (8, 4, 2, 1, 32.50),
 (10, 5, 5, 1, 45.00),
-(11, 5, 6, 1, 40.00);
+(11, 5, 6, 1, 40.00),
+(13, 6, 1, 1, 35.99),
+(14, 6, 3, 1, 28.00);
 
 -- --------------------------------------------------------
 
@@ -159,8 +178,16 @@ CREATE TABLE `usuarios` (
   `apellido` varchar(50) NOT NULL,
   `correo` varchar(100) NOT NULL,
   `direccion` varchar(255) DEFAULT NULL,
+  `pais` varchar(100) DEFAULT NULL,
+  `ciudad` varchar(100) DEFAULT NULL,
+  `estado_provincia` varchar(100) DEFAULT NULL,
+  `codigo_postal` varchar(20) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
   `contrasena` varchar(255) NOT NULL,
   `rol` enum('admin','cliente') DEFAULT 'cliente',
+  `estado_cuenta` enum('activo','suspendido') DEFAULT 'activo',
+  `intentos_fallidos` int(11) DEFAULT 0,
+  `bloqueado_hasta` datetime DEFAULT NULL,
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -179,6 +206,13 @@ INSERT INTO `usuarios` (`id`, `nombre`, `apellido`, `correo`, `direccion`, `cont
 --
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_usuario` (`id_usuario`);
 
 --
 -- Indices de la tabla `carrito`
@@ -228,10 +262,16 @@ ALTER TABLE `usuarios`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `carrito`
 --
 ALTER TABLE `carrito`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `categorias`
@@ -243,13 +283,13 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de la tabla `facturas`
 --
 ALTER TABLE `facturas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `factura_detalles`
 --
 ALTER TABLE `factura_detalles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
@@ -266,6 +306,12 @@ ALTER TABLE `usuarios`
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `carrito`

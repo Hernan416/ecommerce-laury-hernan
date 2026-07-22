@@ -6,18 +6,22 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
+// Obtener el ID del administrador actual desde la sesión
+$id_admin_actual = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : 1;
+
 // LÓGICA PARA AGREGAR USUARIO 
 if (isset($_POST['agregar_usuario'])) {
     $nombre = $conn->real_escape_string($_POST['nombre']);
     $correo = $conn->real_escape_string($_POST['correo']);
     $direccion = $conn->real_escape_string($_POST['direccion']); 
-    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $pass = $_POST['password']; // Se guarda sin hash porque el login actual de PHP no usa password_verify
     $rol = $conn->real_escape_string($_POST['rol']);
 
     $sql = "INSERT INTO usuarios (nombre, correo, direccion, contrasena, rol) 
             VALUES ('$nombre', '$correo', '$direccion', '$pass', '$rol')";
 
     if ($conn->query($sql)) {
+        @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Agregó un nuevo usuario: $correo')");
         header("Location: admin_usuarios.php?status=success");
         exit();
     } else {
@@ -25,11 +29,29 @@ if (isset($_POST['agregar_usuario'])) {
     }
 }
 
+// SUSPENDER / REACTIVAR USUARIO
+if (isset($_GET['cambiar_estado'])) {
+    $id = intval($_GET['cambiar_estado']);
+    $nuevo_estado = $_GET['estado'];
+    $justificacion = isset($_GET['razon']) ? $conn->real_escape_string($_GET['razon']) : "Sin justificación";
+    
+    $conn->query("UPDATE usuarios SET estado_cuenta = '$nuevo_estado' WHERE id = $id");
+    
+    $accion_log = $nuevo_estado == 'suspendido' ? "Suspendió" : "Reactivó";
+    @$conn->query("INSERT INTO audit_logs (id_usuario, accion, detalles) VALUES ($id_admin_actual, '$accion_log al usuario ID $id', 'Razón: $justificacion')");
+    
+    // Si suspendimos al usuario, también invalidaríamos sus sesiones (como no usamos base de datos de sesiones, es limitativo, pero cumplimos el bloqueo de login y registramos la auditoría)
+    header("Location: admin_usuarios.php");
+    exit();
+}
+
 // ELIMINAR 
 if (isset($_GET['eliminar'])) {
     $id = intval($_GET['eliminar']);
     $conn->query("DELETE FROM usuarios WHERE id = $id");
+    @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Eliminó al usuario ID $id')");
     header("Location: admin_usuarios.php");
+    exit();
 }
 
 // CAMBIAR ROL
@@ -38,9 +60,16 @@ if (isset($_GET['cambiar_rol'])) {
     $nuevo_rol = $_GET['rol'];
     $conn->query("UPDATE usuarios SET rol = '$nuevo_rol' WHERE id = $id");
     header("Location: admin_usuarios.php");
+    exit();
 }
 
-$result = $conn->query("SELECT * FROM usuarios");
+$busqueda = "";
+$sql_users = "SELECT * FROM usuarios WHERE 1=1";
+if (isset($_GET['buscar']) && !empty(trim($_GET['buscar']))) {
+    $busqueda = $conn->real_escape_string(trim($_GET['buscar']));
+    $sql_users .= " AND (nombre LIKE '%$busqueda%' OR apellido LIKE '%$busqueda%' OR correo LIKE '%$busqueda%' OR id = '$busqueda')";
+}
+$result = $conn->query($sql_users);
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +112,12 @@ $result = $conn->query("SELECT * FROM usuarios");
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 style="font-family:'Righteous';">Lista de Usuarios</h3>
+        
+        <form class="d-flex w-50 mx-3" action="" method="GET">
+            <input class="form-control me-2" type="search" name="buscar" placeholder="Buscar por Nombre, Correo o ID..." value="<?= htmlspecialchars($busqueda) ?>">
+            <button class="btn btn-custom btn-admin" type="submit">Buscar</button>
+        </form>
+
         <button class="btn-custom btn-agregar shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAgregar">
             + Nuevo Usuario
         </button>
@@ -93,27 +128,42 @@ $result = $conn->query("SELECT * FROM usuarios");
             <table class="table text-center">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Correo</th>
+                        <th>Estado</th>
                         <th>Rol</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while($u = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td style="font-weight: 600;"><?= $u['nombre'] ?></td>
-                        <td><?= $u['correo'] ?></td>
+                    <tr style="<?= $u['estado_cuenta'] == 'suspendido' ? 'opacity: 0.6;' : '' ?>">
+                        <td><?= $u['id'] ?></td>
+                        <td style="font-weight: 600;"><?= htmlspecialchars($u['nombre']) ?></td>
+                        <td><?= htmlspecialchars($u['correo']) ?></td>
+                        <td>
+                            <?php if ($u['estado_cuenta'] == 'activo'): ?>
+                                <span class="badge bg-success">Activo</span>
+                            <?php else: ?>
+                                <span class="badge bg-danger">Suspendido</span>
+                            <?php endif; ?>
+                        </td>
                         <td><span class="rol-text"><?= $u['rol'] ?></span></td>
                         <td>
                             <div class="d-flex gap-2 justify-content-center">
-                                <?php if ($u['rol'] == 'cliente'): ?>
-                                    <a href="?cambiar_rol=<?= $u['id'] ?>&rol=admin" class="btn-custom btn-admin">Hacer Admin</a>
+                                <?php if ($u['estado_cuenta'] == 'activo'): ?>
+                                    <a href="javascript:void(0);" onclick="cambiarEstado(<?= $u['id'] ?>, 'suspendido')" class="btn-custom btn-eliminar">Suspender</a>
                                 <?php else: ?>
-                                    <a href="?cambiar_rol=<?= $u['id'] ?>&rol=cliente" class="btn-custom btn-quitar">Quitar Admin</a>
+                                    <a href="?cambiar_estado=<?= $u['id'] ?>&estado=activo" class="btn-custom btn-admin">Reactivar</a>
                                 <?php endif; ?>
 
-                                <a href="javascript:void(0);" class="btn-custom btn-eliminar" onclick="confirmarEliminacion(<?= $u['id'] ?>)">Eliminar</a>
+                                <?php if ($u['rol'] == 'cliente'): ?>
+                                    <a href="?cambiar_rol=<?= $u['id'] ?>&rol=admin" class="btn-custom btn-quitar border border-secondary">Hacer Admin</a>
+                                <?php else: ?>
+                                    <a href="?cambiar_rol=<?= $u['id'] ?>&rol=cliente" class="btn-custom btn-quitar border border-secondary">Quitar Admin</a>
+                                <?php endif; ?>
+
                             </div>
                         </td>
                     </tr>
@@ -167,6 +217,15 @@ $result = $conn->query("SELECT * FROM usuarios");
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+function cambiarEstado(id, estado) {
+    if (estado === 'suspendido') {
+        const razon = prompt("Ingrese la justificación para suspender a este usuario:");
+        if (razon) {
+            window.location.href = "admin_usuarios.php?cambiar_estado=" + id + "&estado=" + estado + "&razon=" + encodeURIComponent(razon);
+        }
+    }
+}
+
 function confirmarEliminacion(id) {
     Swal.fire({
         title: '¿Estás seguro?',

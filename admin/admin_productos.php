@@ -11,6 +11,43 @@ if ($conn->connect_error) {
 // (Asegúrate de que la clave de tu sesión sea 'id', o cámbiala por 'usuario_id' si es el caso)
 $id_admin_actual = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : 1;
 
+// Función para optimizar y redimensionar imagen
+function optimizar_imagen($origen, $destino, $max_width = 600, $max_height = 600) {
+    $info = getimagesize($origen);
+    if ($info['mime'] == 'image/jpeg') {
+        $img = imagecreatefromjpeg($origen);
+    } elseif ($info['mime'] == 'image/png') {
+        $img = imagecreatefrompng($origen);
+    } else {
+        return false;
+    }
+    
+    $width = $info[0];
+    $height = $info[1];
+    $ratio = min($max_width / $width, $max_height / $height);
+    $new_width = round($width * $ratio);
+    $new_height = round($height * $ratio);
+    
+    $new_img = imagecreatetruecolor($new_width, $new_height);
+    if ($info['mime'] == 'image/png') {
+        imagealphablending($new_img, false);
+        imagesavealpha($new_img, true);
+        $transparent = imagecolorallocatealpha($new_img, 255, 255, 255, 127);
+        imagefilledrectangle($new_img, 0, 0, $new_width, $new_height, $transparent);
+    }
+    
+    imagecopyresampled($new_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+    
+    if ($info['mime'] == 'image/jpeg') {
+        imagejpeg($new_img, $destino, 85);
+    } elseif ($info['mime'] == 'image/png') {
+        imagepng($new_img, $destino, 8);
+    }
+    imagedestroy($img);
+    imagedestroy($new_img);
+    return true;
+}
+
 // ELIMINAR PRODUCTO
 if (isset($_GET['eliminar'])) {
     $id = intval($_GET['eliminar']);
@@ -33,19 +70,34 @@ if (isset($_GET['eliminar'])) {
 if (isset($_POST['agregar'])) {
     $nombre = $conn->real_escape_string($_POST['nombre']);
     $artista = $conn->real_escape_string($_POST['artista']);
-    $precio = $conn->real_escape_string($_POST['precio']);
+    $precio = floatval($_POST['precio']);
     $stock = intval($_POST['stock']);
     $id_cat = intval($_POST['id_categoria']);
-    $imagen = $conn->real_escape_string($_POST['imagen']);
     $desc = $conn->real_escape_string($_POST['descripcion']);
     
+    if ($precio <= 0 || $stock < 0) {
+        die("<h3 style='color:red;'>Error:</h3> Precio debe ser mayor a 0 y stock mayor o igual a 0.");
+    }
+    
+    $imagen_ruta = "";
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        $nombre_archivo = time() . '_' . basename($_FILES['imagen']['name']);
+        $ruta_destino = __DIR__ . '/../assets/uploads/' . $nombre_archivo;
+        
+        if (optimizar_imagen($_FILES['imagen']['tmp_name'], $ruta_destino)) {
+            $imagen_ruta = '../assets/uploads/' . $nombre_archivo;
+        } else {
+            die("<h3 style='color:red;'>Error:</h3> Formato de imagen no soportado.");
+        }
+    } else {
+        die("<h3 style='color:red;'>Error:</h3> Debe subir una imagen válida.");
+    }
+    
     $sql = "INSERT INTO productos (nombre_producto, artista, precio, stock, id_categoria, imagen_portada, descripcion) 
-            VALUES ('$nombre', '$artista', '$precio', $stock, $id_cat, '$imagen', '$desc')";
+            VALUES ('$nombre', '$artista', '$precio', $stock, $id_cat, '$imagen_ruta', '$desc')";
     
     if ($conn->query($sql) === TRUE) {
-        // Registrar auditoría con el ID real de la sesión
         @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Agregó el producto: $nombre')");
-
         echo "<script>alert('¡Producto guardado con éxito!'); window.location.href='admin_productos.php';</script>";
         exit();
     } else {
@@ -58,21 +110,32 @@ if (isset($_POST['editar_producto'])) {
     $id = intval($_POST['id']);
     $nombre = $conn->real_escape_string($_POST['nombre']);
     $artista = $conn->real_escape_string($_POST['artista']);
-    $precio = $conn->real_escape_string($_POST['precio']);
+    $precio = floatval($_POST['precio']);
     $stock = intval($_POST['stock']);
     $id_cat = intval($_POST['id_categoria']);
-    $imagen = $conn->real_escape_string($_POST['imagen']);
     $desc = $conn->real_escape_string($_POST['descripcion']);
+    
+    if ($precio <= 0 || $stock < 0) {
+        die("<h3 style='color:red;'>Error:</h3> Precio debe ser mayor a 0 y stock mayor o igual a 0.");
+    }
+    
+    $imagen_ruta = $conn->real_escape_string($_POST['imagen_actual']);
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        $nombre_archivo = time() . '_' . basename($_FILES['imagen']['name']);
+        $ruta_destino = __DIR__ . '/../assets/uploads/' . $nombre_archivo;
+        
+        if (optimizar_imagen($_FILES['imagen']['tmp_name'], $ruta_destino)) {
+            $imagen_ruta = '../assets/uploads/' . $nombre_archivo;
+        }
+    }
     
     $sql = "UPDATE productos SET 
             nombre_producto = '$nombre', artista = '$artista', precio = '$precio', 
-            stock = $stock, id_categoria = $id_cat, imagen_portada = '$imagen', descripcion = '$desc' 
+            stock = $stock, id_categoria = $id_cat, imagen_portada = '$imagen_ruta', descripcion = '$desc' 
             WHERE id = $id";
     
     if ($conn->query($sql) === TRUE) {
-        // Registrar auditoría con el ID real de la sesión
         @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Actualizó el producto: $nombre')");
-
         echo "<script>alert('¡Producto actualizado con éxito!'); window.location.href='admin_productos.php';</script>";
         exit();
     } else {
@@ -176,7 +239,7 @@ while($cat_row = $res_cats->fetch_assoc()){
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content p-4 shadow">
                                 <h5 class="modal-title mb-4" style="font-family:'Righteous'; color:#504E76;">Editar Vinilo</h5>
-                                <form method="POST">
+                                <form method="POST" enctype="multipart/form-data">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
                                     <div class="row g-3">
                                         <div class="col-md-6 text-start">
@@ -189,11 +252,11 @@ while($cat_row = $res_cats->fetch_assoc()){
                                         </div>
                                         <div class="col-md-4 text-start">
                                             <label class="form-label">Precio ($)</label>
-                                            <input type="number" step="0.01" name="precio" class="form-control" value="<?= $p['precio'] ?>" required>
+                                            <input type="number" step="0.01" min="0.01" name="precio" class="form-control" value="<?= $p['precio'] ?>" required>
                                         </div>
                                         <div class="col-md-4 text-start">
                                             <label class="form-label">Stock</label>
-                                            <input type="number" name="stock" class="form-control" value="<?= $p['stock'] ?>" required>
+                                            <input type="number" min="0" name="stock" class="form-control" value="<?= $p['stock'] ?>" required>
                                         </div>
                                         <div class="col-md-4 text-start">
                                             <label class="form-label">Género</label>
@@ -206,8 +269,9 @@ while($cat_row = $res_cats->fetch_assoc()){
                                             </select>
                                         </div>
                                         <div class="col-12 text-start">
-                                            <label class="form-label">URL Imagen de Portada</label>
-                                            <input type="text" name="imagen" class="form-control" value="<?= htmlspecialchars($p['imagen_portada']) ?>" required>
+                                            <label class="form-label">Imagen de Portada (JPG/PNG) - Dejar vacío para mantener la actual</label>
+                                            <input type="hidden" name="imagen_actual" value="<?= htmlspecialchars($p['imagen_portada']) ?>">
+                                            <input type="file" name="imagen" class="form-control" accept="image/jpeg, image/png">
                                         </div>
                                         <div class="col-12 text-start">
                                             <label class="form-label">Descripción</label>
@@ -230,7 +294,7 @@ while($cat_row = $res_cats->fetch_assoc()){
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-4 shadow">
             <h5 class="modal-title mb-4" style="font-family:'Righteous'; color:#504E76;">Nuevo Vinilo al Catálogo</h5>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="row g-3">
                     <div class="col-md-6 text-start">
                         <label class="form-label">Nombre del Álbum</label>
@@ -242,11 +306,11 @@ while($cat_row = $res_cats->fetch_assoc()){
                     </div>
                     <div class="col-md-4 text-start">
                         <label class="form-label">Precio ($)</label>
-                        <input type="number" step="0.01" name="precio" class="form-control" required>
+                        <input type="number" step="0.01" min="0.01" name="precio" class="form-control" required>
                     </div>
                     <div class="col-md-4 text-start">
                         <label class="form-label">Stock</label>
-                        <input type="number" name="stock" class="form-control" required>
+                        <input type="number" min="0" name="stock" class="form-control" required>
                     </div>
                     <div class="col-md-4 text-start">
                         <label class="form-label">Género</label>
@@ -258,8 +322,8 @@ while($cat_row = $res_cats->fetch_assoc()){
                         </select>
                     </div>
                     <div class="col-12 text-start">
-                        <label class="form-label">URL Imagen de Portada</label>
-                        <input type="text" name="imagen" class="form-control" placeholder="https://..." required>
+                        <label class="form-label">Subir Imagen de Portada (JPG/PNG)</label>
+                        <input type="file" name="imagen" class="form-control" accept="image/jpeg, image/png" required>
                     </div>
                     <div class="col-12 text-start">
                         <label class="form-label">Descripción</label>
