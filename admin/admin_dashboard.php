@@ -30,6 +30,7 @@ require 'auth_admin.php';
 
         <div class="row g-4 justify-content-center">
 
+            <!-- Card Usuarios -->
             <div class="col-12 col-sm-10 col-md-8 col-lg-5">
                 <div class="card shadow-sm border-0 rounded-4 p-4 text-center"
                     style="border: 2px solid #E6D8B8; background-color: #ffffff;">
@@ -40,6 +41,7 @@ require 'auth_admin.php';
                 </div>
             </div>
 
+            <!-- Card Productos -->
             <div class="col-12 col-sm-10 col-md-8 col-lg-5">
                 <div class="card shadow-sm border-0 rounded-4 p-4 text-center"
                     style="border: 2px solid #E6D8B8; background-color: #ffffff;">
@@ -47,6 +49,28 @@ require 'auth_admin.php';
                     <p style="color: #C06C38;">Gestiona los productos de la tienda</p>
                     <a href="admin_productos.php" class="btn text-white px-5"
                         style="background-color: #504E76; border-radius: 10px;">Ir</a>
+                </div>
+            </div>
+
+            <!-- NUEVA CARD: Reportes -->
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                <div class="card shadow-sm border-0 rounded-4 p-4 text-center"
+                    style="border: 2px solid #E6D8B8; background-color: #ffffff;">
+                    <h4 style="font-family: 'Righteous'; color: #504E76;">Reportes</h4>
+                    <p style="color: #C06C38;">Visualiza métricas y ventas del e-commerce</p>
+                    <a href="admin_reportes.php" class="btn text-white px-5"
+                        style="background-color: #504E76; border-radius: 10px;">Ir</a>
+                </div>
+            </div>
+
+            <!-- NUEVA CARD: Auditorías -->
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                <div class="card shadow-sm border-0 rounded-4 p-4 text-center"
+                    style="border: 2px solid #E6D8B8; background-color: #ffffff;">
+                    <h4 style="font-family: 'Righteous'; color: #504E76;">Auditoría</h4>
+                    <p style="color: #C06C38;">Revisa el registro de actividades del sistema</p>
+                    <a href="admin_auditorias.php" class="btn text-white px-5"
+                        style="background-color: #C06C38; border-radius: 10px;">Ir</a>
                 </div>
             </div>
 

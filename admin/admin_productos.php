@@ -1,17 +1,32 @@
 <?php
 require 'auth_admin.php';
+
 $conn = new mysqli("localhost", "root", "", "the_drop_vinyls");
 
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
+// Obtener el ID del administrador actual desde la sesión
+// (Asegúrate de que la clave de tu sesión sea 'id', o cámbiala por 'usuario_id' si es el caso)
+$id_admin_actual = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : 1;
+
 // ELIMINAR PRODUCTO
 if (isset($_GET['eliminar'])) {
     $id = intval($_GET['eliminar']);
-    $conn->query("DELETE FROM productos WHERE id = $id");
-    header("Location: admin_productos.php");
-    exit();
+    
+    $res_prod = $conn->query("SELECT nombre_producto FROM productos WHERE id = $id");
+    $nombre_prod = ($res_prod && $prod = $res_prod->fetch_assoc()) ? $prod['nombre_producto'] : 'Desconocido';
+
+    if ($conn->query("DELETE FROM productos WHERE id = $id") === TRUE) {
+        // Registrar auditoría con el ID real de la sesión
+        @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Eliminó el producto: $nombre_prod')");
+
+        header("Location: admin_productos.php");
+        exit();
+    } else {
+        die("<h3 style='color:red;'>Error al eliminar:</h3> " . $conn->error);
+    }
 }
 
 // AGREGAR PRODUCTO
@@ -26,9 +41,16 @@ if (isset($_POST['agregar'])) {
     
     $sql = "INSERT INTO productos (nombre_producto, artista, precio, stock, id_categoria, imagen_portada, descripcion) 
             VALUES ('$nombre', '$artista', '$precio', $stock, $id_cat, '$imagen', '$desc')";
-    $conn->query($sql);
-    header("Location: admin_productos.php");
-    exit();
+    
+    if ($conn->query($sql) === TRUE) {
+        // Registrar auditoría con el ID real de la sesión
+        @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Agregó el producto: $nombre')");
+
+        echo "<script>alert('¡Producto guardado con éxito!'); window.location.href='admin_productos.php';</script>";
+        exit();
+    } else {
+        die("<h3 style='color:red;'>Error de MySQL al insertar producto:</h3> " . $conn->error);
+    }
 }
 
 // EDITAR PRODUCTO
@@ -46,9 +68,16 @@ if (isset($_POST['editar_producto'])) {
             nombre_producto = '$nombre', artista = '$artista', precio = '$precio', 
             stock = $stock, id_categoria = $id_cat, imagen_portada = '$imagen', descripcion = '$desc' 
             WHERE id = $id";
-    $conn->query($sql);
-    header("Location: admin_productos.php");
-    exit();
+    
+    if ($conn->query($sql) === TRUE) {
+        // Registrar auditoría con el ID real de la sesión
+        @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Actualizó el producto: $nombre')");
+
+        echo "<script>alert('¡Producto actualizado con éxito!'); window.location.href='admin_productos.php';</script>";
+        exit();
+    } else {
+        die("<h3 style='color:red;'>Error de MySQL al actualizar producto:</h3> " . $conn->error);
+    }
 }
 
 // CONSULTA PARA LA TABLA
@@ -64,11 +93,14 @@ while($cat_row = $res_cats->fetch_assoc()){
     $todas_las_cats[] = $cat_row;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <?php include(__DIR__ . '/../assets/head.php'); ?>
+    <?php 
+    if (file_exists(__DIR__ . '/../assets/head.php')) {
+        include(__DIR__ . '/../assets/head.php'); 
+    }
+    ?>
     <meta charset="UTF-8">
     <title>Inventario - The Drop Vinyls</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -126,10 +158,10 @@ while($cat_row = $res_cats->fetch_assoc()){
                 <tbody>
                     <?php while($p = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><img src="<?= $p['imagen_portada'] ?>" class="img-mini" alt="Vinilo"></td>
-                        <td style="font-weight: 600;"><?= $p['nombre_producto'] ?></td>
-                        <td style="color: #C06C38;"><?= $p['artista'] ?></td>
-                        <td><span class="badge-genero"><?= $p['nombre_categoria'] ?? 'Sin Género' ?></span></td>
+                        <td><img src="<?= htmlspecialchars($p['imagen_portada']) ?>" class="img-mini" alt="Vinilo"></td>
+                        <td style="font-weight: 600;"><?= htmlspecialchars($p['nombre_producto']) ?></td>
+                        <td style="color: #C06C38;"><?= htmlspecialchars($p['artista']) ?></td>
+                        <td><span class="badge-genero"><?= htmlspecialchars($p['nombre_categoria'] ?? 'Sin Género') ?></span></td>
                         <td style="font-weight: 700;">$<?= number_format($p['precio'], 2) ?></td>
                         <td><?= $p['stock'] ?></td>
                         <td>
@@ -149,11 +181,11 @@ while($cat_row = $res_cats->fetch_assoc()){
                                     <div class="row g-3">
                                         <div class="col-md-6 text-start">
                                             <label class="form-label">Nombre del Álbum</label>
-                                            <input type="text" name="nombre" class="form-control" value="<?= $p['nombre_producto'] ?>" required>
+                                            <input type="text" name="nombre" class="form-control" value="<?= htmlspecialchars($p['nombre_producto']) ?>" required>
                                         </div>
                                         <div class="col-md-6 text-start">
                                             <label class="form-label">Artista</label>
-                                            <input type="text" name="artista" class="form-control" value="<?= $p['artista'] ?>" required>
+                                            <input type="text" name="artista" class="form-control" value="<?= htmlspecialchars($p['artista']) ?>" required>
                                         </div>
                                         <div class="col-md-4 text-start">
                                             <label class="form-label">Precio ($)</label>
@@ -168,18 +200,18 @@ while($cat_row = $res_cats->fetch_assoc()){
                                             <select name="id_categoria" class="form-select" required>
                                                 <?php foreach($todas_las_cats as $c): ?>
                                                     <option value="<?= $c['id'] ?>" <?= ($p['id_categoria'] == $c['id']) ? 'selected' : '' ?>>
-                                                        <?= $c['nombre_categoria'] ?>
+                                                        <?= htmlspecialchars($c['nombre_categoria']) ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
                                         <div class="col-12 text-start">
                                             <label class="form-label">URL Imagen de Portada</label>
-                                            <input type="text" name="imagen" class="form-control" value="<?= $p['imagen_portada'] ?>" required>
+                                            <input type="text" name="imagen" class="form-control" value="<?= htmlspecialchars($p['imagen_portada']) ?>" required>
                                         </div>
                                         <div class="col-12 text-start">
                                             <label class="form-label">Descripción</label>
-                                            <textarea name="descripcion" class="form-control" rows="3"><?= $p['descripcion'] ?></textarea>
+                                            <textarea name="descripcion" class="form-control" rows="3"><?= htmlspecialchars($p['descripcion']) ?></textarea>
                                         </div>
                                     </div>
                                     <button type="submit" name="editar_producto" class="btn-custom btn-editar w-100 mt-4 py-2">Guardar Cambios</button>
@@ -221,7 +253,7 @@ while($cat_row = $res_cats->fetch_assoc()){
                         <select name="id_categoria" class="form-select" required>
                             <option value="">Seleccionar...</option>
                             <?php foreach($todas_las_cats as $c): ?>
-                                <option value="<?= $c['id'] ?>"><?= $c['nombre_categoria'] ?></option>
+                                <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['nombre_categoria']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

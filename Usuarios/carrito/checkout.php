@@ -53,6 +53,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_detalles->execute();
         $stmt_detalles->close();
 
+        // ---------------------------------------------------------
+        // NUEVO: RESTAR EL STOCK DE CADA PRODUCTO COMPRADO
+        // ---------------------------------------------------------
+        $sql_stock = "UPDATE productos p 
+                      JOIN carrito c ON p.id = c.id_producto 
+                      SET p.stock = p.stock - c.cantidad 
+                      WHERE c.id_usuario = ?";
+        $stmt_stock = $conn->prepare($sql_stock);
+        $stmt_stock->bind_param("i", $id_usuario);
+        $stmt_stock->execute();
+        $stmt_stock->close();
+        // ---------------------------------------------------------
+
         // Vaciar el carrito de este usuario
         $stmt_vaciar = $conn->prepare("DELETE FROM carrito WHERE id_usuario = ?");
         $stmt_vaciar->bind_param("i", $id_usuario);
