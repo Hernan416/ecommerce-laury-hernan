@@ -12,13 +12,14 @@ $id_admin_actual = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id
 // LÓGICA PARA AGREGAR USUARIO 
 if (isset($_POST['agregar_usuario'])) {
     $nombre = $conn->real_escape_string($_POST['nombre']);
+    $apellido = $conn->real_escape_string($_POST['apellido']);
     $correo = $conn->real_escape_string($_POST['correo']);
     $direccion = $conn->real_escape_string($_POST['direccion']); 
     $pass = $_POST['password']; // Se guarda sin hash porque el login actual de PHP no usa password_verify
     $rol = $conn->real_escape_string($_POST['rol']);
 
-    $sql = "INSERT INTO usuarios (nombre, correo, direccion, contrasena, rol) 
-            VALUES ('$nombre', '$correo', '$direccion', '$pass', '$rol')";
+    $sql = "INSERT INTO usuarios (nombre, apellido, correo, direccion, contrasena, rol) 
+            VALUES ('$nombre', '$apellido', '$correo', '$direccion', '$pass', '$rol')";
 
     if ($conn->query($sql)) {
         @$conn->query("INSERT INTO audit_logs (id_usuario, accion) VALUES ($id_admin_actual, 'Agregó un nuevo usuario: $correo')");
@@ -184,8 +185,12 @@ $result = $conn->query($sql_users);
             <form action="" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nombre Completo</label>
+                        <label class="form-label">Nombre</label>
                         <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellido</label>
+                        <input type="text" name="apellido" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Correo Electrónico</label>
